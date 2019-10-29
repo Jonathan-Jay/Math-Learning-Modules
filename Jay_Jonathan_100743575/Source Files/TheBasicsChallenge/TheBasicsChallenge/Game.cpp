@@ -242,7 +242,7 @@ void Game::KeyboardDown(int mainplayer)
 
 void Game::KeyboardUp(int mainplayer)
 {
-	if (Input::GetKeyUp(Key::F1))
+	if (Input::GetKeyUp(Key::Home))
 	{
 		if (!UI::m_isInit)
 		{
@@ -263,7 +263,7 @@ void Game::Movement(int mainplayer)
 
 	if (movement.x != 0.f || movement.y != 0.f) {
 		if (Speed > 2.f) Speed = 2.f;
-		else Speed += 0.005f;
+		else Speed += 0.0005f;
 		CurrentAnim.SetRepeating(false);
 		if (CurrentAnim.GetAnimationDone() == true) {
 			CurrentAnim.SetSecPerFrame(0.05f / Speed);

@@ -10,45 +10,45 @@ void Scroll::Update()
 	vec3(temp) = m_focus->GetPosition();
 	vec3(current) = m_cam->GetPosition();
 	vec3(LP) = current;
-	LP.x = LP.x * cos(angle) + LP.y * sin(angle);
-	LP.y = LP.y * cos(angle) + LP.x * sin(angle);
+	/*LP.x = LP.x * cos(angle) + LP.y * sin(angle);
+	LP.y = LP.y * cos(angle) + LP.x * sin(angle);*/
 	float setx = m_offsetx;
 	float sety = m_offsety;
-	printf("t: %f, %f\n", temp.x, temp.y);
+	/*printf("t: %f, %f\n", temp.x, temp.y);
+	current.y += (temp.y - (LP.y + sety)) * cos(angle);
+	current.x += (temp.y - (LP.y + sety)) * sin(angle);*/
 	
 	bool change = false;
 	
 	//above focus y
 	if (temp.y > LP.y + sety) {
-		current.y += (temp.y - (LP.y + sety)) * cos(angle);
-		current.x += (temp.y - (LP.y + sety)) * sin(angle);
+		current.y += (temp.y - (LP.y + sety));
 		change = true;
 	}
 
 	//below focus y
 	if (temp.y < LP.y - sety) {
-		current.y += (temp.y - (LP.y - sety)) * cos(angle);
-		current.x += (temp.y - (LP.y - sety)) * sin(angle);
+		current.y += (temp.y - (LP.y - sety));
 		change = true;
 	}
 
 	//above focus x
 	if (temp.x > LP.x + setx) {
-		current.x += (temp.x - (LP.x + setx)) * cos(angle);
-		current.y += (temp.x - (LP.x + setx)) * sin(angle);
+		current.x += (temp.x - (LP.x + setx));
 		change = true;
 	}
 
 	//below focus x
 	if (temp.x < LP.x - setx) {
-		current.x += (temp.x - (LP.x - setx)) * cos(angle);
-		current.y += (temp.x - (LP.x - setx)) * sin(angle);
+		current.x += (temp.x - (LP.x - setx));
 		change = true;
 	}
 
-	printf("c: %f, %f\n", current.x, current.y);
+	//printf("c: %f, %f\n", current.x, current.y);
 
-	if (change) m_cam->SetPosition(current);
+	if (change) {
+		m_cam->SetPosition(current);
+	}
 }
 
 Camera* Scroll::GetCam() const

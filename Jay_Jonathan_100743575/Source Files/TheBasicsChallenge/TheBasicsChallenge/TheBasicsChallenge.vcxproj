@@ -226,6 +226,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UI.cpp" />
+    <ClCompile Include="Vector.cpp" />
     <ClCompile Include="VertexManager.cpp" />
     <ClCompile Include="Scroll.cpp" />
     <ClCompile Include="VignetteEffect.cpp" />

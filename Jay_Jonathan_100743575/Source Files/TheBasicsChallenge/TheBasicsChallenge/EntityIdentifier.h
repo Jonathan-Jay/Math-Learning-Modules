@@ -86,7 +86,7 @@ private:
 	static unsigned int m_animationBit;
 	static unsigned int m_linkBit;
 	static unsigned int m_physicsBit;
-	static unsigned int m_ScrollCameraBit;
+	static unsigned int m_scrollCameraBit;
 
 };
 

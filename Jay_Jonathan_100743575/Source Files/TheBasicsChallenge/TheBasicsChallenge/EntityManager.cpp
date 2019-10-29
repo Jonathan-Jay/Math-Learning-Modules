@@ -45,6 +45,10 @@ void EntityManager::CreateManager()
 			temp = vec3(0.f, 0.f, 10.f);
 			temp2 = vec3(0.f, 75.f, 100.f);
 			temp3 = 0.f;
+			randomized = false;
+			randomized2 = false;
+			rotating = false;
+			rotating2 = false;
 			m_register->get<Camera>(maincamera).SetPosition(temp);
 		}
 

@@ -1,7 +1,7 @@
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
 
-#pragma comment(lib, "Vector.lib")
+//#pragma comment(lib, "Vector.lib")
 
 #include "Vector.h"
 
