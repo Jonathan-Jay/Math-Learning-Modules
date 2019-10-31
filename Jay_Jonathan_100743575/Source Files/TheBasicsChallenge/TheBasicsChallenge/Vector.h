@@ -49,7 +49,16 @@ public:
 	//Used for indexing using [] operator
 	float* hold[3] = { &x, &y, &z };
 
+	void Subtract(vec3 v1);
+	void MultScalar(float s);
+	void DivScalar(float s);
+
+	float Dot(vec3 v2);
+
 	float GetMagnitude();
+	float GetMagnitudeSquared();
+	vec3 Normalize();
+	vec3 Project(vec3 b);
 
 	//Operator overload for indexing using []
 	float operator[](int i);

@@ -109,9 +109,64 @@ vec3::vec3(float _x, float _y, float _z)
 	z = _z;
 }
 
+void vec3::Subtract(vec3 v1)
+{
+	this->x -= v1.x;
+	this->y -= v1.y;
+	this->z -= v1.z;
+}
+
+void vec3::MultScalar(float s)
+{
+	this->x *= s;
+	this->y *= s;
+	this->z *= s;
+}
+
+void vec3::DivScalar(float s)
+{
+	this->x /= s;
+	this->y /= s;
+	this->z /= s;
+}
+
+float vec3::Dot(vec3 v2)
+{
+	return (x * v2.x + y * v2.y + z * v2.z);
+}
+
 float vec3::GetMagnitude()
 {
 	return float(sqrt((x * x) + (y * y) + (z * z)));
+}
+
+float vec3::GetMagnitudeSquared()
+{
+	float magnitude = GetMagnitude();
+	
+	return magnitude * magnitude;
+}
+
+vec3 vec3::Normalize()
+{
+	vec3 normalized = *this / GetMagnitude();
+	
+	return normalized;
+}
+
+vec3 vec3::Project(vec3 b)
+{
+	vec3 a = *this;
+
+	//Equation
+	//     A dot B
+	//B * ---------
+	//     ||B||^2
+
+	float numerator = a.Dot(b);
+	float denominator = b.GetMagnitudeSquared();
+	
+	return (b * (numerator / denominator));
 }
 
 float vec3::operator[](int i)

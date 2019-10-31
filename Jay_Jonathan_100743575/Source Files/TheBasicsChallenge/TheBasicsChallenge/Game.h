@@ -62,6 +62,7 @@ public:
 	void KeyboardDown(int mainplayer);
 	void KeyboardUp(int mainplayer);
 
+	void MovementKey(int mainplayer);
 	void Movement(int mainplayer);
 
 	//Mouse input

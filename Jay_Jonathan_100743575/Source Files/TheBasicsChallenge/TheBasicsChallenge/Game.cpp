@@ -132,10 +132,11 @@ void Game::AcceptInput()
 
 	//Just calls all the other input functions 
 	GamepadInput(mainplayer);
-	
 	KeyboardHold(mainplayer);
 	KeyboardDown(mainplayer);
 	KeyboardUp(mainplayer);
+
+	if (movement.x == 0 && movement.y == 0) MovementKey(mainplayer);
 
 	//Resets the key flags
 	//Must be done once per frame for input to work
@@ -187,10 +188,10 @@ void Game::GamepadStick(XInputController* con, int mainplayer)
 	Stick sticks[2];
 	con->GetSticks(sticks);
 
-	if (sticks[0].x > 0.1f)		movement.x = sticks[0].x /4 + Speed;
-	if (sticks[0].x < -0.1f)	movement.x = sticks[0].x /4 - Speed;
-	if (sticks[0].y > 0.1f)		movement.y = sticks[0].y /4 + Speed;
-	if (sticks[0].y < -0.1f)	movement.y = sticks[0].y /4 - Speed;
+	if (sticks[0].x > 0.1f)		movement.x += sticks[0].x /4 + Speed;
+	if (sticks[0].x < -0.1f)	movement.x += sticks[0].x /4 - Speed;
+	if (sticks[0].y > 0.1f)		movement.y += sticks[0].y /4 + Speed;
+	if (sticks[0].y < -0.1f)	movement.y += sticks[0].y /4 - Speed;
 }
 
 void Game::GamepadTrigger(XInputController* con, int mainplayer)
@@ -211,6 +212,7 @@ void Game::GamepadTrigger(XInputController* con, int mainplayer)
 
 void Game::KeyboardHold(int mainplayer)
 {
+	//Keyboard button held
 	if (Input::GetKey(Key::Space) && Width > 0.01 && Height > 0.01) {
 		Width *= 0.99;
 		Height *= 0.99;
@@ -227,11 +229,6 @@ void Game::KeyboardHold(int mainplayer)
 	m_register->get<Sprite>(mainplayer).SetHeight(Height);
 	m_register->get<Sprite>(mainplayer).SetWidth(Width);
 
-	//Keyboard button held
-	if (Input::GetKey(Key::W))	movement.y = Speed;
-	if (Input::GetKey(Key::A))	movement.x = -Speed;
-	if (Input::GetKey(Key::S))	movement.y = -Speed;
-	if (Input::GetKey(Key::D))	movement.x = Speed;
 }
 
 void Game::KeyboardDown(int mainplayer)
@@ -252,6 +249,14 @@ void Game::KeyboardUp(int mainplayer)
 	}
 }
 
+void Game::MovementKey(int mainplayer)
+{
+	if (Input::GetKey(Key::W) || Input::GetKey(Key::UpArrow))		movement.y += Speed;
+	if (Input::GetKey(Key::A) || Input::GetKey(Key::LeftArrow))		movement.x += -Speed;
+	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		movement.y += -Speed;
+	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	movement.x += Speed;
+}
+
 void Game::Movement(int mainplayer)
 {
 	vec3(CurrentPosition) = m_register->get<Transform>(mainplayer).GetPosition();
@@ -263,7 +268,7 @@ void Game::Movement(int mainplayer)
 
 	if (movement.x != 0.f || movement.y != 0.f) {
 		if (Speed > 2.f) Speed = 2.f;
-		else Speed += 0.0005f;
+		else Speed += 0.001f;
 		CurrentAnim.SetRepeating(false);
 		if (CurrentAnim.GetAnimationDone() == true) {
 			CurrentAnim.SetSecPerFrame(0.05f / Speed);
