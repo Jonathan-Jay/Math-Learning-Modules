@@ -6,18 +6,14 @@ Scroll::Scroll()
 
 void Scroll::Update()
 {
-	Radians(angle) = -m_cam->GetRotationAngleZ();
+	Radians(angle) = m_cam->GetRotationAngleZ();
 	vec3(temp) = m_focus->GetPosition();
 	vec3(current) = m_cam->GetPosition();
-	vec3(LP) = current;
-	/*LP.x = LP.x * cos(angle) + LP.y * sin(angle);
-	LP.y = LP.y * cos(angle) + LP.x * sin(angle);*/
+	current = vec3(current.x * cos(angle) - current.y * sin(angle), current.y * cos(angle) + current.x * sin(angle), current.z);
+	vec3(LP) = m_cam->m_localPosition;
+	LP = vec3(LP.x * cos(angle) - LP.y * sin(angle), LP.y * cos(angle) + LP.x * sin(angle), LP.z);
 	float setx = m_offsetx;
 	float sety = m_offsety;
-	/*printf("t: %f, %f\n", temp.x, temp.y);
-	current.y += (temp.y - (LP.y + sety)) * cos(angle);
-	current.x += (temp.y - (LP.y + sety)) * sin(angle);*/
-	
 	bool change = false;
 	
 	//above focus y
@@ -44,9 +40,8 @@ void Scroll::Update()
 		change = true;
 	}
 
-	//printf("c: %f, %f\n", current.x, current.y);
-
 	if (change) {
+		current = vec3(current.x * cos(-angle) - current.y * sin(-angle), current.y * cos(-angle) + current.x * sin(-angle), current.z);
 		m_cam->SetPosition(current);
 	}
 }

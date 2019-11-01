@@ -84,10 +84,25 @@ public:
 	//Used for indexing using [] operator
 	float* hold[4] = { &x, &y, &z, &w };
 
+	void Subtract(vec4 v1);
+	void MultScalar(float s);
+	void DivScalar(float s);
+
+	float Dot(vec4 v2);
+
 	float GetMagnitude();
+	float GetMagnitudeSquared();
+	vec4 Normalize();
+	vec4 Project(vec4 b);
 
 	//Operator overload for indexing using []
 	float operator[](int i);
+	vec4 operator-();
+	vec4 operator+(vec4 v2);
+	vec4 operator-(vec4 v2);
+
+	vec4 operator*(float s);
+	vec4 operator/(float s);
 };
 
 #endif // !__VECTOR_H__

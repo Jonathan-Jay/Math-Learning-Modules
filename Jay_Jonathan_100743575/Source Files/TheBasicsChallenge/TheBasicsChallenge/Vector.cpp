@@ -211,12 +211,95 @@ vec4::vec4(float _x, float _y, float _z, float _w)
 	w = _w;
 }
 
+void vec4::Subtract(vec4 v1)
+{
+	this->x -= v1.x;
+	this->y -= v1.y;
+	this->z -= v1.x;
+	this->w -= v1.w;
+}
+
+void vec4::MultScalar(float s)
+{
+	this->x *= s;
+	this->y *= s;
+	this->z *= s;
+	this->w *= s;
+}
+
+void vec4::DivScalar(float s)
+{
+	this->x /= s;
+	this->y /= s;
+	this->z /= s;
+	this->w /= s;
+}
+
+float vec4::Dot(vec4 v2)
+{
+	return (x * v2.x + y * v2.y + z * v2.z + w * v2.w);
+}
+
 float vec4::GetMagnitude()
 {
 	return float(sqrt((x * x) + (y * y) + (z * z) + (w * w)));
 }
 
+float vec4::GetMagnitudeSquared()
+{
+	float magnitude = GetMagnitude();
+
+	return magnitude * magnitude;
+}
+
+vec4 vec4::Normalize()
+{
+	vec4 normalized = *this / GetMagnitude();
+
+	return normalized;
+}
+
+vec4 vec4::Project(vec4 b)
+{
+	vec4 a = *this;
+
+	//Equation
+	//     A dot B
+	//B * ---------
+	//     ||B||^2
+
+	float numerator = a.Dot(b);
+	float denominator = b.GetMagnitudeSquared();
+
+	return (b * (numerator / denominator));
+}
+
 float vec4::operator[](int i)
 {
 	return *hold[i];
+}
+
+vec4 vec4::operator-()
+{
+	return vec4( -x, -y, -z, -w);
+}
+
+vec4 vec4::operator+(vec4 v2)
+{
+	return vec4(this->x + v2.x, this->y + v2.y, this->z + v2.z, this->w + v2.w);
+}
+
+vec4 vec4::operator-(vec4 v2)
+{
+	return vec4(this->x - v2.x, this->y - v2.y, this->z - v2.z, this->w - v2.w);
+}
+
+vec4 vec4::operator*(float s)
+{
+	return vec4(this->x * s, this->y * s, this->z * s, this->w * s);
+}
+
+vec4 vec4::operator/(float s)
+{
+	return vec4(this->x / s, this->y / s, this->z / s, this->w / s);
 }

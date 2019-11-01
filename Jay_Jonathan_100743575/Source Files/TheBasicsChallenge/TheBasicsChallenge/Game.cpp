@@ -3,8 +3,10 @@
 
 float Width(59);
 float Height(54);
-float Speed = 0.5f;
-vec3(movement) = vec3(0.f, 0.f, 0.f);
+float Jump(50);
+bool controller = false;
+vec2 Acceleration = vec2(0.f, -9.8f);
+vec2(movement) = vec2(0.f, 0.f);
 
 Game::~Game()
 {
@@ -129,14 +131,14 @@ void Game::AcceptInput()
 {
 	XInputManager::Update();
 	int mainplayer = EntityIdentifier::MainPlayer();
+	controller = false;
 
 	//Just calls all the other input functions 
 	GamepadInput(mainplayer);
 	KeyboardHold(mainplayer);
 	KeyboardDown(mainplayer);
 	KeyboardUp(mainplayer);
-
-	if (movement.x == 0 && movement.y == 0) MovementKey(mainplayer);
+	if (!controller) MovementKey(mainplayer);
 
 	//Resets the key flags
 	//Must be done once per frame for input to work
@@ -188,10 +190,10 @@ void Game::GamepadStick(XInputController* con, int mainplayer)
 	Stick sticks[2];
 	con->GetSticks(sticks);
 
-	if (sticks[0].x > 0.1f)		movement.x += sticks[0].x /4 + Speed;
-	if (sticks[0].x < -0.1f)	movement.x += sticks[0].x /4 - Speed;
-	if (sticks[0].y > 0.1f)		movement.y += sticks[0].y /4 + Speed;
-	if (sticks[0].y < -0.1f)	movement.y += sticks[0].y /4 - Speed;
+	if (sticks[0].x > 0.1f)		{ Acceleration.x += sticks[0].x * 40.f; controller = true; }
+	if (sticks[0].x < -0.1f)	{ Acceleration.x += sticks[0].x * 40.f; controller = true; }
+	if (sticks[0].y > 0.1f)		{ Acceleration.y += sticks[0].y * 50.f; controller = true; }
+	if (sticks[0].y < -0.1f)	{ Acceleration.y += sticks[0].y * 75.f; controller = true; }
 }
 
 void Game::GamepadTrigger(XInputController* con, int mainplayer)
@@ -216,7 +218,6 @@ void Game::KeyboardHold(int mainplayer)
 	if (Input::GetKey(Key::Space) && Width > 0.01 && Height > 0.01) {
 		Width *= 0.99;
 		Height *= 0.99;
-		Speed = 0.05 / Width;
 	}
 	else if (Height < 54 || Width < 59) {
 		Width *= 1.1;
@@ -229,12 +230,15 @@ void Game::KeyboardHold(int mainplayer)
 	m_register->get<Sprite>(mainplayer).SetHeight(Height);
 	m_register->get<Sprite>(mainplayer).SetWidth(Width);
 
+	if (Input::GetKey(Key::Space) && Jump < 75) {
+		Jump++;
+	}
+
 }
 
 void Game::KeyboardDown(int mainplayer)
 {
 	//Keyboard button down
-
 }
 
 void Game::KeyboardUp(int mainplayer)
@@ -247,45 +251,65 @@ void Game::KeyboardUp(int mainplayer)
 		}
 		m_guiActive = !m_guiActive;
 	}
+
+	if (Input::GetKeyUp(Key::Space)) {
+		if (m_register->get<Transform>(mainplayer).GetPositionY() <= -49.99) {
+			Acceleration.y = Jump * 1000;
+		}
+		Jump = 25;
+	}
 }
 
 void Game::MovementKey(int mainplayer)
 {
-	if (Input::GetKey(Key::W) || Input::GetKey(Key::UpArrow))		movement.y += Speed;
-	if (Input::GetKey(Key::A) || Input::GetKey(Key::LeftArrow))		movement.x += -Speed;
-	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		movement.y += -Speed;
-	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	movement.x += Speed;
+	if (Input::GetKey(Key::W) || Input::GetKey(Key::UpArrow))		Acceleration.y += 50.f;
+	if (Input::GetKey(Key::A) || Input::GetKey(Key::LeftArrow))		Acceleration.x -= 40.f;
+	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		Acceleration.y -= 75.f;
+	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	Acceleration.x += 40.f;
 }
 
 void Game::Movement(int mainplayer)
 {
 	vec3(CurrentPosition) = m_register->get<Transform>(mainplayer).GetPosition();
 	auto& CurrentAnim = m_register->get<AnimationController>(mainplayer).GetAnimation(m_register->get<AnimationController>(mainplayer).GetActiveAnim());
-	if (CurrentPosition.x > 250)	CurrentPosition.x = 250;
-	if (CurrentPosition.x < -250)	CurrentPosition.x = -250;
-	if (CurrentPosition.y > 250)	CurrentPosition.y = 250;
-	if (CurrentPosition.y < -250)	CurrentPosition.y = -250;
 
-	if (movement.x != 0.f || movement.y != 0.f) {
-		if (Speed > 2.f) Speed = 2.f;
-		else Speed += 0.001f;
+	if (movement.GetMagnitude() != 0) {
 		CurrentAnim.SetRepeating(false);
 		if (CurrentAnim.GetAnimationDone() == true) {
-			CurrentAnim.SetSecPerFrame(0.05f / Speed);
+			CurrentAnim.SetSecPerFrame(90.f / (movement.GetMagnitude() + 1000.f));
 		}
+
+		if (movement.x > 0.001f) Acceleration.x -= 10.f;
+		else if (movement.x < -0.001f) Acceleration.x += 10.f;
 
 		if (movement.x > 0)			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
 		else if (movement.x < 0)	m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
-		m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition + movement);
 	}
 	else {
-		Speed = 0.5f;
 		if (CurrentAnim.GetSecPerFrame() != 0.09f) {
 			CurrentAnim.SetSecPerFrame(0.09f);
 		}
 		CurrentAnim.SetRepeating(true);
 	}
-	movement = vec3(0.f, 0.f, 0.f);
+
+	if (CurrentPosition.y <= -49.99) movement.y = 0.f;
+
+	movement = movement + Acceleration * Timer::deltaTime;
+
+	if (movement.x > 250.f) movement.x = 250.f;
+	else if (movement.x < -250.f) movement.x = -250.f;
+	if (movement.y > 10000.f) movement.y = 10000.f;
+	else if (movement.y < -250.f) movement.y = -250.f;
+
+	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime) + vec3(Acceleration.x, Acceleration.y, 0) * (Timer::deltaTime * Timer::deltaTime) / 2;
+	
+	if (CurrentPosition.x > 250)	CurrentPosition.x = 250;
+	if (CurrentPosition.x < -250)	CurrentPosition.x = -250;
+	if (CurrentPosition.y > 450)	CurrentPosition.y = 450;
+	if (CurrentPosition.y < -50)	CurrentPosition.y = -50;
+	
+	m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition);
+	Acceleration = vec2(0.f, -100.f);
 }
 
 void Game::MouseMotion(SDL_MouseMotionEvent evnt)
