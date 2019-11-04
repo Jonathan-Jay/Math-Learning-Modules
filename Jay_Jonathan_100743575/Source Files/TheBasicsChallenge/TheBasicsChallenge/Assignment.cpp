@@ -1,5 +1,4 @@
 #include "Assignment.h"
-#include "Game.h"
 
 Assignment::Assignment(std::string name)
 	: Scene(name)

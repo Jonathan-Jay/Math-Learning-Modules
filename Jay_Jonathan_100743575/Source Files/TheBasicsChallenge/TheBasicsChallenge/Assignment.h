@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Scene.h"
-#include "BackEnd.h"
-#include "JSON.h"
 
 class Assignment : public Scene
 {
