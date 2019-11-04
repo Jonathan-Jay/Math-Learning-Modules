@@ -5,7 +5,7 @@ float Width(59);
 float Height(54);
 float Jump(50);
 bool controller = false;
-vec2 Acceleration = vec2(0.f, -9.8f);
+vec2 Acceleration = vec2(0.f, -500.f);
 vec2(movement) = vec2(0.f, 0.f);
 
 Game::~Game()
@@ -279,8 +279,8 @@ void Game::Movement(int mainplayer)
 			CurrentAnim.SetSecPerFrame(90.f / (movement.GetMagnitude() + 1000.f));
 		}
 
-		if (movement.x > 0.001f) Acceleration.x -= 10.f;
-		else if (movement.x < -0.001f) Acceleration.x += 10.f;
+		if (movement.x > 0.01f) Acceleration.x -= 10.f;
+		else if (movement.x < -0.01f) Acceleration.x += 10.f;
 
 		if (movement.x > 0)			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
 		else if (movement.x < 0)	m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
@@ -292,7 +292,7 @@ void Game::Movement(int mainplayer)
 		CurrentAnim.SetRepeating(true);
 	}
 
-	if (CurrentPosition.y <= -49.99) movement.y = 0.f;
+	if (CurrentPosition.y <= -49.99) movement.y = 500.f;
 
 	movement = movement + Acceleration * Timer::deltaTime;
 
@@ -301,7 +301,7 @@ void Game::Movement(int mainplayer)
 	if (movement.y > 10000.f) movement.y = 10000.f;
 	else if (movement.y < -250.f) movement.y = -250.f;
 
-	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime) + vec3(Acceleration.x, Acceleration.y, 0) * (Timer::deltaTime * Timer::deltaTime) / 2;
+	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime) + vec3(Acceleration.x, Acceleration.y, 0.f) * (Timer::deltaTime * Timer::deltaTime) / 2;
 	
 	if (CurrentPosition.x > 250)	CurrentPosition.x = 250;
 	if (CurrentPosition.x < -250)	CurrentPosition.x = -250;
@@ -309,7 +309,7 @@ void Game::Movement(int mainplayer)
 	if (CurrentPosition.y < -50)	CurrentPosition.y = -50;
 	
 	m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition);
-	Acceleration = vec2(0.f, -100.f);
+	Acceleration = vec2(0.f, -500.f);
 }
 
 void Game::MouseMotion(SDL_MouseMotionEvent evnt)

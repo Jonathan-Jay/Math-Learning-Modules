@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Scene.h"
 
 class Assignment : public Scene
