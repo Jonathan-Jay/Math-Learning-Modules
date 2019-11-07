@@ -3,10 +3,15 @@
 
 float Width(59);
 float Height(54);
-float Jump(50);
+float Launch(25);
 bool controller = false;
-vec2 Acceleration = vec2(0.f, -500.f);
-vec2(movement) = vec2(0.f, 0.f);
+bool Bounce = false;
+bool SpeedCap = true;
+bool Deccel = true;
+vec2 Force = vec2(0.f, 0.f);
+vec2 movement = vec2(0.f, 0.f);
+vec2 objectMov = vec2(0.f, 0.f);
+float weight = 1.f;
 
 Game::~Game()
 {
@@ -131,6 +136,8 @@ void Game::AcceptInput()
 {
 	XInputManager::Update();
 	int mainplayer = EntityIdentifier::MainPlayer();
+	int object = EntityIdentifier::Object();
+	int tracker = EntityIdentifier::Tracker();
 	controller = false;
 
 	//Just calls all the other input functions 
@@ -138,12 +145,12 @@ void Game::AcceptInput()
 	KeyboardHold(mainplayer);
 	KeyboardDown(mainplayer);
 	KeyboardUp(mainplayer);
-	if (!controller) MovementKey(mainplayer);
+	if (!controller) MovementKey(mainplayer, tracker);
 
 	//Resets the key flags
 	//Must be done once per frame for input to work
 	Input::ResetKeys();
-	Game::Movement(mainplayer);
+	Game::Movement(mainplayer, object, tracker);
 }
 
 void Game::GamepadInput(int mainplayer)
@@ -190,10 +197,10 @@ void Game::GamepadStick(XInputController* con, int mainplayer)
 	Stick sticks[2];
 	con->GetSticks(sticks);
 
-	if (sticks[0].x > 0.1f)		{ Acceleration.x += sticks[0].x * 40.f; controller = true; }
-	if (sticks[0].x < -0.1f)	{ Acceleration.x += sticks[0].x * 40.f; controller = true; }
-	if (sticks[0].y > 0.1f)		{ Acceleration.y += sticks[0].y * 50.f; controller = true; }
-	if (sticks[0].y < -0.1f)	{ Acceleration.y += sticks[0].y * 75.f; controller = true; }
+	if (sticks[0].x > 0.1f)		{ Force.x += sticks[0].x * 200.f; controller = true; }
+	if (sticks[0].x < -0.1f)	{ Force.x += sticks[0].x * 200.f; controller = true; }
+	if (sticks[0].y > 0.1f)		{ Force.y += sticks[0].y * 200.f; controller = true; }
+	if (sticks[0].y < -0.1f)	{ Force.y += sticks[0].y * 200.f; controller = true; }
 }
 
 void Game::GamepadTrigger(XInputController* con, int mainplayer)
@@ -218,20 +225,23 @@ void Game::KeyboardHold(int mainplayer)
 	if (Input::GetKey(Key::Space) && Width > 0.01 && Height > 0.01) {
 		Width *= 0.99;
 		Height *= 0.99;
+		weight *= 0.997;
 	}
 	else if (Height < 54 || Width < 59) {
 		Width *= 1.1;
 		Height *= 1.1;
+		if (weight < 1)	weight *= 1.1;
 	}
 	if (Height > 54 || Width > 59) {
 		Height = 54;
 		Width = 59;
+		weight = 1;
 	}
 	m_register->get<Sprite>(mainplayer).SetHeight(Height);
 	m_register->get<Sprite>(mainplayer).SetWidth(Width);
 
-	if (Input::GetKey(Key::Space) && Jump < 75) {
-		Jump++;
+	if (Input::GetKey(Key::Space) && Launch < 100) {
+		Launch++;
 	}
 
 }
@@ -239,6 +249,45 @@ void Game::KeyboardHold(int mainplayer)
 void Game::KeyboardDown(int mainplayer)
 {
 	//Keyboard button down
+	if (Input::GetKeyDown(Key::One)) {
+		if (Bounce) {
+			Bounce = false;
+			printf("Bounce off\n");
+		}
+		else {
+			Bounce = true;
+			printf("Bounce on\n");
+		}
+	}
+	
+	if (Input::GetKeyDown(Key::Two)) {
+		if (SpeedCap) {
+			SpeedCap = false;
+			printf("Speed Cap off\n");
+		}
+		else {
+			SpeedCap = true;
+			printf("Speed Cap on\n");
+		}
+	}
+
+	if (Input::GetKeyDown(Key::Three)) {
+		if (Deccel) {
+			Deccel = false;
+			printf("Decceleration off\n");
+		}
+		else {
+			Deccel = true;
+			printf("Decceleration on\n");
+		}
+	}
+
+	if (Input::GetKeyDown(Key::Four)) {
+		SpeedCap = true;
+		Deccel = true;
+		Bounce = false;
+		printf("Settings Reset:\nBounce = off\nSpeed Cap = on\nDecceleration = on\n");
+	}
 }
 
 void Game::KeyboardUp(int mainplayer)
@@ -253,37 +302,50 @@ void Game::KeyboardUp(int mainplayer)
 	}
 
 	if (Input::GetKeyUp(Key::Space)) {
-		if (m_register->get<Transform>(mainplayer).GetPositionY() <= -49.99) {
-			Acceleration.y = Jump * 1000;
+		if (movement.GetMagnitude() > 0) {
+			movement = movement + movement.Normalize() * Launch * 10;
 		}
-		Jump = 25;
+		Launch = 25;
 	}
 }
 
-void Game::MovementKey(int mainplayer)
+void Game::MovementKey(int mainplayer, int tracker)
 {
-	if (Input::GetKey(Key::W) || Input::GetKey(Key::UpArrow))		Acceleration.y += 50.f;
-	if (Input::GetKey(Key::A) || Input::GetKey(Key::LeftArrow))		Acceleration.x -= 40.f;
-	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		Acceleration.y -= 75.f;
-	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	Acceleration.x += 40.f;
+	if (Input::GetKey(Key::W) || Input::GetKey(Key::UpArrow))		Force.y += 200.f;
+	if (Input::GetKey(Key::A) || Input::GetKey(Key::LeftArrow))		Force.x -= 200.f;
+	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		Force.y -= 200.f;
+	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	Force.x += 200.f;
+
+	if (Input::GetKey(Key::I))	objectMov.y += 0.25f;
+	if (Input::GetKey(Key::J))	objectMov.x -= 0.25f;
+	if (Input::GetKey(Key::K))	objectMov.y -= 0.25f;
+	if (Input::GetKey(Key::L))	objectMov.x += 0.25f;
 }
 
-void Game::Movement(int mainplayer)
+void Game::Movement(int mainplayer, int object, int tracker)
 {
 	vec3(CurrentPosition) = m_register->get<Transform>(mainplayer).GetPosition();
+	vec3(ObjectPos) = m_register->get<Transform>(object).GetPosition();	
+	vec3(TrackerPos) = m_register->get<Transform>(tracker).GetPosition();
 	auto& CurrentAnim = m_register->get<AnimationController>(mainplayer).GetAnimation(m_register->get<AnimationController>(mainplayer).GetActiveAnim());
 
 	if (movement.GetMagnitude() != 0) {
 		CurrentAnim.SetRepeating(false);
 		if (CurrentAnim.GetAnimationDone() == true) {
-			CurrentAnim.SetSecPerFrame(90.f / (movement.GetMagnitude() + 1000.f));
+			CurrentAnim.SetSecPerFrame(27.f / (movement.GetMagnitude() + 300.f));
 		}
 
-		if (movement.x > 0.01f) Acceleration.x -= 10.f;
-		else if (movement.x < -0.01f) Acceleration.x += 10.f;
+ 		if (Deccel)	movement = movement * 0.995;
 
-		if (movement.x > 0)			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
-		else if (movement.x < 0)	m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
+ 		if (movement.x > 0.1f) {
+			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
+			m_register->get<Transform>(mainplayer).SetRotationAngleZ(PI / 2 - movement.GetAngle(vec2(0.f, 1.f)));
+		}
+		else if (movement.x < 0.1f) {
+			m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
+			m_register->get<Transform>(mainplayer).SetRotationAngleZ(-(PI / 2 - movement.GetAngle(vec2(0.f, 1.f))));
+		}
+		if (movement.GetMagnitude() < 1.f) movement = vec2(0.f, 0.f);
 	}
 	else {
 		if (CurrentAnim.GetSecPerFrame() != 0.09f) {
@@ -292,24 +354,63 @@ void Game::Movement(int mainplayer)
 		CurrentAnim.SetRepeating(true);
 	}
 
-	if (CurrentPosition.y <= -49.99) movement.y = 500.f;
-
+	vec2(Acceleration) = Force / weight;
 	movement = movement + Acceleration * Timer::deltaTime;
 
-	if (movement.x > 250.f) movement.x = 250.f;
-	else if (movement.x < -250.f) movement.x = -250.f;
-	if (movement.y > 10000.f) movement.y = 10000.f;
-	else if (movement.y < -250.f) movement.y = -250.f;
+	if (CurrentPosition.y <= -250) movement.y = -movement.y;
+	if (CurrentPosition.y >= 250) movement.y = -movement.y;
+	if (CurrentPosition.x <= -250) movement.x = -movement.x;
+	if (CurrentPosition.x >= 250) movement.x = -movement.x;
 
-	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime) + vec3(Acceleration.x, Acceleration.y, 0.f) * (Timer::deltaTime * Timer::deltaTime) / 2;
-	
+	if (SpeedCap) {
+		if (movement.x > 500.f) movement.x = 500.f;
+		else if (movement.x < -500.f) movement.x = -500.f;
+		if (movement.y > 500.f) movement.y = 500.f;
+		else if (movement.y < -500.f) movement.y = -500.f;
+	}
+
+	vec2(Pos) = vec2(CurrentPosition.x, CurrentPosition.y);
+	vec2(Pos2) = vec2(ObjectPos.x, ObjectPos.y);
+	vec2(Pos3) = vec2(TrackerPos.x, TrackerPos.y);
+	vec2(change) = Pos3 - Pos2;
+	vec2(result) = Pos - Pos2;
+
+	//Tracker Movement
+	if (TrackerPos.x <= -100.f && TrackerPos.y >= -100.f)	TrackerPos.y -= 0.11;
+	if (TrackerPos.x <= 100.f && TrackerPos.y <= -100.f)	TrackerPos.x += 0.11;
+	if (TrackerPos.x >= 100.f && TrackerPos.y <= 100.f)		TrackerPos.y += 0.11;
+	if (TrackerPos.x >= -100.f && TrackerPos.y >= 100.f)	TrackerPos.x -= 0.11;
+
+	//Object Movement
+	if (change.GetMagnitude() > 1.f) {
+		change = change.Normalize() / 10;
+		ObjectPos = ObjectPos + vec3(change.x, change.y, 0.f) + vec3(objectMov.x, objectMov.y, 0.f);
+	}
+
+	//Object Collision (Circular)
+	if (result.GetMagnitude() < m_register->get<Sprite>(object).GetWidth() / 2 + 20.f) {
+		result = result.Normalize();
+		if (Bounce)	movement = -movement;
+		else	CurrentPosition = CurrentPosition + vec3(result.x, result.y, 0.f);
+		ObjectPos = ObjectPos + vec3(-result.x / 2.f, -result.y / 2.f, 0.f);
+	}
+	else	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime) + vec3(Acceleration.x, Acceleration.y, 0.f) * (Timer::deltaTime * Timer::deltaTime) / 2;
+
 	if (CurrentPosition.x > 250)	CurrentPosition.x = 250;
 	if (CurrentPosition.x < -250)	CurrentPosition.x = -250;
-	if (CurrentPosition.y > 450)	CurrentPosition.y = 450;
-	if (CurrentPosition.y < -50)	CurrentPosition.y = -50;
-	
+	if (CurrentPosition.y > 250)	CurrentPosition.y = 250;
+	if (CurrentPosition.y < -250)	CurrentPosition.y = -250;
+
+	if (ObjectPos.x > 200)	ObjectPos.x = 200;
+	if (ObjectPos.x < -200)	ObjectPos.x = -200;
+	if (ObjectPos.y > 200)	ObjectPos.y = 200;
+	if (ObjectPos.y < -200)	ObjectPos.y = -200;
+
 	m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition);
-	Acceleration = vec2(0.f, -500.f);
+	m_register->get<Transform>(object).SetPosition(ObjectPos);
+	m_register->get<Transform>(tracker).SetPosition(TrackerPos);
+	Force = vec2(0.f, -0.f);
+	objectMov = vec2(0.f, -0.f);
 }
 
 void Game::MouseMotion(SDL_MouseMotionEvent evnt)

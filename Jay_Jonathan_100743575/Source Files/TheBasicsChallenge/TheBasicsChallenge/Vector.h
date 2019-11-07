@@ -25,6 +25,7 @@ public:
 	float GetMagnitudeSquared();
 	vec2 Normalize();
 	vec2 Project(vec2 b);
+	float GetAngle(vec2 b);
 
 	//Operator overload for indexing using []
 	float operator[](int i);

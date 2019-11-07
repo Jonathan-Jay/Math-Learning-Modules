@@ -12,31 +12,29 @@ void Scroll::Update()
 	current = vec3(current.x * cos(angle) - current.y * sin(angle), current.y * cos(angle) + current.x * sin(angle), current.z);
 	vec3(LP) = m_cam->m_localPosition;
 	LP = vec3(LP.x * cos(angle) - LP.y * sin(angle), LP.y * cos(angle) + LP.x * sin(angle), LP.z);
-	float setx = m_offsetx;
-	float sety = m_offsety;
 	bool change = false;
 	
 	//above focus y
-	if (temp.y > LP.y + sety) {
-		current.y += (temp.y - (LP.y + sety));
+	if (temp.y > LP.y + m_offsety) {
+		current.y += (temp.y - (LP.y + m_offsety));
 		change = true;
 	}
 
 	//below focus y
-	if (temp.y < LP.y - sety) {
-		current.y += (temp.y - (LP.y - sety));
+	if (temp.y < LP.y - m_offsety) {
+		current.y += (temp.y - (LP.y - m_offsety));
 		change = true;
 	}
 
 	//above focus x
-	if (temp.x > LP.x + setx) {
-		current.x += (temp.x - (LP.x + setx));
+	if (temp.x > LP.x + m_offsetx) {
+		current.x += (temp.x - (LP.x + m_offsetx));
 		change = true;
 	}
 
 	//below focus x
-	if (temp.x < LP.x - setx) {
-		current.x += (temp.x - (LP.x - setx));
+	if (temp.x < LP.x - m_offsetx) {
+		current.x += (temp.x - (LP.x - m_offsetx));
 		change = true;
 	}
 

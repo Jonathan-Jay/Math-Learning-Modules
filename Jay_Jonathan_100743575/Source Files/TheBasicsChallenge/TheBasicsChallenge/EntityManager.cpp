@@ -36,16 +36,20 @@ void EntityManager::CreateTab()
 void EntityManager::CreateManager()
 {
 	if (m_selectable.GetSelected()) {
-		int mainplayer = EntityIdentifier::MainPlayer(), helloworld = EntityIdentifier::HelloWorld(), maincamera = EntityIdentifier::MainCamera();
+		int mainplayer = EntityIdentifier::MainPlayer(), object = EntityIdentifier::Object(), maincamera = EntityIdentifier::MainCamera();
+		float Scalar = m_register->get<Sprite>(object).GetWidth();
+
 		vec3(MainPlayerPos) = m_register->get<Transform>(mainplayer).GetPosition();
-		vec3(HelloWorldPos) = m_register->get<Transform>(helloworld).GetPosition();
-		Degrees CameraRot = Transform::ToDegrees(-m_register->get<Camera>(maincamera).GetRotationAngleZ());
+		vec3(ObjectPos) = m_register->get<Transform>(object).GetPosition();
 		vec3(CameraPos) = m_register->get<Camera>(maincamera).GetPosition();
 
+		Degrees CameraRot = Transform::ToDegrees(-m_register->get<Camera>(maincamera).GetRotationAngleZ());
+
 		if (ImGui::Button("Reset All", ImVec2(200.f, 20.f))) {
-			MainPlayerPos = vec3(0.f, 0.f, 10.f);
-			HelloWorldPos = vec3(0.f, 75.f, 100.f);
+			MainPlayerPos = vec3(0.f, 0.f, 50.f);
+			ObjectPos = vec3(0.f, 50.f, 10.f);
 			CameraRot = 0.f;
+			Scalar = 20.f;
 			randomized = false;
 			randomized2 = false;
 			rotating = false;
@@ -90,43 +94,49 @@ void EntityManager::CreateManager()
 				ImGui::TreePop();
 			}
 
-			float Range[3] = { MainPlayerPos.x, MainPlayerPos.y + 200, MainPlayerPos.z * 2.5 };
+			float Range[3] = { MainPlayerPos.x, MainPlayerPos.y, MainPlayerPos.z * 2.5 };
 			if (ImGui::DragFloat3("Position (x, y, z)", &Range[0], 1.f, -250.f, 250.f)) {
-				MainPlayerPos = vec3(Range[0], Range[1] - 200, Range[2] / 2.5);
+				MainPlayerPos = vec3(Range[0], Range[1], Range[2] / 2.5);
 			}
 
 			if (ImGui::Button("Reset Position", ImVec2(200.f, 20.f))) {
-				MainPlayerPos = vec3(0.f, 0.f, 10.f);
+				MainPlayerPos = vec3(0.f, 0.f, 50.f);
 			}
 
 			ImGui::Checkbox("Randomize Position", &randomized);
 			if (randomized) {
-				MainPlayerPos = vec3(((rand() % 500) - 250), ((rand() % 500) - 250), 0.f);
+				MainPlayerPos = vec3(((rand() % 500) - 250), ((rand() % 500) - 250), MainPlayerPos.z);
 			}
 
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNode("Hello World Sign")) {
-			float Range2[2] = { HelloWorldPos.x, HelloWorldPos.y };
-			if (ImGui::DragFloat2("Position (x, y)", &Range2[0], 1.f, -250.f, 250.f)) {
-				HelloWorldPos = vec3(Range2[0], Range2[1], HelloWorldPos.z);
+		if (ImGui::TreeNode("Object")) {
+			float Range2[2] = { ObjectPos.x, ObjectPos.y };
+			if (ImGui::DragFloat2("Position (x, y)", &Range2[0], 1.f, -200.f, 200.f)) {
+				ObjectPos = vec3(Range2[0], Range2[1], ObjectPos.z);
 			}
 
 			if (ImGui::Button("Reset Position ", ImVec2(200.f, 20.f))) {
-				HelloWorldPos = vec3(0.f, 75.f, 100.f);
+				ObjectPos = vec3(0.f, 50.f, 10.f);
 			}
 
 			ImGui::Checkbox("Randomize Position ", &randomized2);
 			if (randomized2) {
-				HelloWorldPos = vec3(((rand() % 500) - 250), ((rand() % 500) - 250), HelloWorldPos.z);
+				ObjectPos = vec3(((rand() % 400) - 200), ((rand() % 400) - 200), ObjectPos.z);
+			}
+
+			ImGui::DragFloat("Size", &Scalar, 0.5f, 5.f, 200.f);
+
+			if (ImGui::Button("Reset Size", ImVec2(200.f, 20.f))) {
+				Scalar = 20.f;
 			}
 
 			ImGui::TreePop();
 		}
 
 		if (ImGui::TreeNode("Camera")) {
-			ImGui::DragFloat("Camera Angle", &CameraRot);
+			ImGui::DragFloat("Camera Angle Z", &CameraRot);
 
 			if (ImGui::Button("Reset Angle", ImVec2(200.f, 20.f))) {
 				CameraRot = 0.f;
@@ -148,7 +158,7 @@ void EntityManager::CreateManager()
 			}
 
 			if (ImGui::Button("Focus", ImVec2(200.f, 20.f))) {
-				m_register->get<Camera>(maincamera).SetPosition(MainPlayerPos);
+				CameraPos = MainPlayerPos;
 			}
 
 			if (CameraRot < 0) {
@@ -162,8 +172,12 @@ void EntityManager::CreateManager()
 		}
 
 		m_register->get<Transform>(mainplayer).SetPosition(MainPlayerPos);
-		m_register->get<Transform>(helloworld).SetPosition(HelloWorldPos);
+		
 		m_register->get<Camera>(maincamera).SetRotationAngleZ(Transform::ToRadians(-CameraRot));
 		m_register->get<Camera>(maincamera).SetPosition(CameraPos);
+		
+		m_register->get<Transform>(object).SetPosition(ObjectPos);
+		m_register->get<Sprite>(object).SetWidth(Scalar);
+		m_register->get<Sprite>(object).SetHeight(Scalar);
 	}
 }

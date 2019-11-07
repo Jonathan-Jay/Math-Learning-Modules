@@ -2,7 +2,8 @@
 
 unsigned int EntityIdentifier::m_mainCamera = 0;
 unsigned int EntityIdentifier::m_mainPlayer = 0;
-unsigned int EntityIdentifier::m_helloWorld = 0;
+unsigned int EntityIdentifier::m_object = 0;
+unsigned int EntityIdentifier::m_tracker = 0;
 
 unsigned int EntityIdentifier::m_cameraBit				= 0x1;
 unsigned int EntityIdentifier::m_spriteBit				= 0x10;
@@ -48,14 +49,24 @@ bool EntityIdentifier::GetIsMainCamera() const
 	return m_isMainCamera;
 }
 
-unsigned int EntityIdentifier::HelloWorld()
+unsigned int EntityIdentifier::Object()
 {
-	return m_helloWorld;
+	return m_object;
 }
 
-bool EntityIdentifier::GetIsHelloWorld() const
+bool EntityIdentifier::GetIsObject() const
 {
-	return m_isHelloWorld;
+	return m_isObject;
+}
+
+unsigned int EntityIdentifier::Tracker()
+{
+	return m_tracker;
+}
+
+bool EntityIdentifier::GetIsTracker() const
+{
+	return m_isTracker;
 }
 
 unsigned int EntityIdentifier::GetEntity() const
@@ -147,14 +158,24 @@ void EntityIdentifier::SetIsMainCamera(bool main)
 	m_isMainCamera = main;
 }
 
-void EntityIdentifier::HelloWorld(unsigned int entity)
+void EntityIdentifier::Object(unsigned int entity)
 {
-	m_helloWorld = entity;
+	m_object = entity;
 }
 
-void EntityIdentifier::SetIsHelloWorld(bool main)
+void EntityIdentifier::SetIsObject(bool main)
 {
-	m_isHelloWorld = main;
+	m_isObject = main;
+}
+
+void EntityIdentifier::Tracker(unsigned int entity)
+{
+	m_tracker = entity;
+}
+
+void EntityIdentifier::SetIsTracker(bool main)
+{
+	m_isTracker = main;
 }
 
 void EntityIdentifier::SetEntity(unsigned int entity)

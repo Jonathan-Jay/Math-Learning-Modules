@@ -68,6 +68,21 @@ float vec2::Dot(vec2 v2)
 	return float(x * v2.x + y * v2.y);
 }
 
+float vec2::GetAngle(vec2 b)
+{
+	vec2 a = *this;
+
+	//Equation
+	//          A dot B
+	//acos( --------------- )
+	//       ||A|| * ||B||
+
+	float numerator = a.Dot(b);
+	float denominator = a.GetMagnitude() * b.GetMagnitude();
+	
+	return acos(numerator / denominator);
+}
+
 float vec2::operator[](int i)
 {
 	return *hold[i];

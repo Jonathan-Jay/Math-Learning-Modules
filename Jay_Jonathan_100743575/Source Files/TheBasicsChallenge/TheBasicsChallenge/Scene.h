@@ -143,10 +143,15 @@ inline void from_json(const nlohmann::json& j, Scene& scene)
 			//Sets main player
 			EntityIdentifier::MainPlayer(entity);
 		}
-		if (reg.get<EntityIdentifier>(entity).GetIsHelloWorld())
+		if (reg.get<EntityIdentifier>(entity).GetIsObject())
 		{
 			//Sets main player
-			EntityIdentifier::HelloWorld(entity);
+			EntityIdentifier::Object(entity);
+		}
+		if (reg.get<EntityIdentifier>(entity).GetIsTracker())
+		{
+			//Sets main player
+			EntityIdentifier::Tracker(entity);
 		}
 
 		unsigned int identity = reg.get<EntityIdentifier>(entity).GetIdentifier();

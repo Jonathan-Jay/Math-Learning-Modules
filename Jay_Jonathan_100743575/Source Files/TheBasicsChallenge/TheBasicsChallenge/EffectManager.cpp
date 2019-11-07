@@ -178,11 +178,10 @@ void EffectManager::CreateEditor()
 			if (m_selectiveColor != -1) {
 				SelectiveColorEffect* temp = (SelectiveColorEffect*)EffectManager::GetEffect(m_selectiveColor);
 				float ColourRange1[] = { temp->GetColorRange1().x, temp->GetColorRange1().y, temp->GetColorRange1().z };
-				float ColourRange2[] = { temp->GetColorRange2().x, temp->GetColorRange2().y, temp->GetColorRange2().z };
 
 				ImGui::Text("Currently Attached");
 
-				if (ImGui::SliderFloat3("Colour Range 1", &ColourRange1[0], 0.f, 1.f)) {
+				if (ImGui::SliderFloat3("Colour Range", &ColourRange1[0], 0.f, 1.f)) {
 					temp->SetColorRange1(vec3(ColourRange1[0], ColourRange1[1], ColourRange1[2]));
 				}
 

@@ -48,6 +48,8 @@ void ECS::SetIsMainCamera(unsigned entity, bool mainCamera)
 {
 	//Gets reference to the component
 	auto& id = GetComponent<EntityIdentifier>(entity);
+	//Sets main camera entity
+	EntityIdentifier::MainCamera(entity);
 	//Sets whether this entity is the main camera
 	id.SetIsMainCamera(mainCamera);
 }
@@ -56,13 +58,26 @@ void ECS::SetIsMainPlayer(unsigned entity, bool mainPlayer)
 {
 	//Gets reference to the component
 	auto& id = GetComponent<EntityIdentifier>(entity);
+	//Sets main camera entity
+	EntityIdentifier::MainPlayer(entity);
 	//Sets whether this entity is the main player
 	id.SetIsMainPlayer(mainPlayer);
 }
 
-void ECS::SetIsHelloWorld(unsigned entity, bool HelloWorld)
+void ECS::SetIsObject(unsigned entity, bool Object)
 {
 	auto& id = GetComponent<EntityIdentifier>(entity);
 
-	id.SetIsHelloWorld(HelloWorld);
+	EntityIdentifier::Object(entity);
+
+	id.SetIsObject(Object);
+}
+
+void ECS::SetIsTracker(unsigned entity, bool Tracker)
+{
+	auto& id = GetComponent<EntityIdentifier>(entity);
+
+	EntityIdentifier::Tracker(entity);
+
+	id.SetIsTracker(Tracker);
 }

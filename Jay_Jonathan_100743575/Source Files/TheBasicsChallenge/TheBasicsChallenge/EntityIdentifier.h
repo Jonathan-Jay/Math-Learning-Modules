@@ -17,8 +17,11 @@ public:
 	static unsigned int MainCamera();
 	bool GetIsMainCamera() const;
 
-	static unsigned int HelloWorld();
-	bool GetIsHelloWorld() const;
+	static unsigned int Object();
+	bool GetIsObject() const;
+	
+	static unsigned int Tracker();
+	bool GetIsTracker() const;
 
 	//Get entity number
 	unsigned int GetEntity() const;
@@ -45,8 +48,11 @@ public:
 	static void MainCamera(unsigned int entity);
 	void SetIsMainCamera(bool main);
 
-	static void HelloWorld(unsigned int entity);
-	void SetIsHelloWorld(bool main);
+	static void Object(unsigned int entity);
+	void SetIsObject(bool main);
+
+	static void Tracker(unsigned int entity);
+	void SetIsTracker(bool main);
 
 	//Set entity number
 	void SetEntity(unsigned int entity);
@@ -65,9 +71,11 @@ private:
 	static unsigned int m_mainCamera;
 	bool m_isMainCamera = false;
 
-	static unsigned int m_helloWorld;
-	bool m_isHelloWorld = false;
+	static unsigned int m_object;
+	bool m_isObject = false;
 
+	static unsigned int m_tracker;
+	bool m_isTracker = false;
 
 	//Stores the entity number
 	unsigned int m_entity;
@@ -105,7 +113,11 @@ inline void to_json(nlohmann::json& j, const EntityIdentifier& id)
 	//Stores whether or not this is the main player
 	j["MainPlayer"] = id.GetIsMainPlayer();
 	
-	j["HelloWorld"] = id.GetIsHelloWorld();
+	//Stores whether or not this is the object
+	j["Object"] = id.GetIsObject();
+
+	//Stores whether or not this is the tracker
+	j["Tracker"] = id.GetIsTracker();
 
 	//Stores the name of this entity
 	j["Name"] = id.GetName();
@@ -123,7 +135,11 @@ inline void from_json(const nlohmann::json& j, EntityIdentifier& id)
 	//Grabs whether or not this is the main player
 	id.SetIsMainPlayer(j["MainPlayer"]);
 	
-	id.SetIsHelloWorld(j["HelloWorld"]);
+	//Grabs whether or not this is the object
+	id.SetIsObject(j["Object"]);
+
+	//Grabs whether or not this is the tracker
+	id.SetIsTracker(j["Tracker"]);
 
 	//Grabs the name of this entity
 	id.SetName(j["Name"]);

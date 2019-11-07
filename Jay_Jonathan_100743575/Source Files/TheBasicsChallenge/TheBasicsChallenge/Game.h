@@ -62,8 +62,8 @@ public:
 	void KeyboardDown(int mainplayer);
 	void KeyboardUp(int mainplayer);
 
-	void MovementKey(int mainplayer);
-	void Movement(int mainplayer);
+	void MovementKey(int mainplayer, int object);
+	void Movement(int mainplayer, int object, int tracker);
 
 	//Mouse input
 	void MouseMotion(SDL_MouseMotionEvent evnt);
