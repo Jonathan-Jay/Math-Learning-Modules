@@ -283,9 +283,9 @@ void Game::KeyboardDown(int mainplayer)
 	}
 
 	if (Input::GetKeyDown(Key::Four)) {
+		Bounce = false;
 		SpeedCap = true;
 		Deccel = true;
-		Bounce = false;
 		printf("Settings Reset:\nBounce = off\nSpeed Cap = on\nDecceleration = on\n");
 	}
 }
@@ -369,32 +369,37 @@ void Game::Movement(int mainplayer, int object, int tracker)
 		else if (movement.y < -500.f) movement.y = -500.f;
 	}
 
-	vec2(Pos) = vec2(CurrentPosition.x, CurrentPosition.y);
+	//getting some vectors
+	vec2(Pos1) = vec2(CurrentPosition.x, CurrentPosition.y);
 	vec2(Pos2) = vec2(ObjectPos.x, ObjectPos.y);
 	vec2(Pos3) = vec2(TrackerPos.x, TrackerPos.y);
-	vec2(change) = Pos3 - Pos2;
-	vec2(result) = Pos - Pos2;
+	vec2(tracking) = Pos3 - Pos2;
+	vec2(result) = Pos1 - Pos2;
 
 	//Tracker Movement
-	if (TrackerPos.x <= -100.f && TrackerPos.y >= -100.f)	TrackerPos.y -= 0.11;
-	if (TrackerPos.x <= 100.f && TrackerPos.y <= -100.f)	TrackerPos.x += 0.11;
-	if (TrackerPos.x >= 100.f && TrackerPos.y <= 100.f)		TrackerPos.y += 0.11;
-	if (TrackerPos.x >= -100.f && TrackerPos.y >= 100.f)	TrackerPos.x -= 0.11;
+	if (TrackerPos.x <= -100.f && TrackerPos.y >= -100.f)		TrackerPos.y -= 0.115;
+	else if (TrackerPos.x <= 100.f && TrackerPos.y <= -100.f)	TrackerPos.x += 0.115;
+	else if (TrackerPos.x >= 100.f && TrackerPos.y <= 100.f)	TrackerPos.y += 0.115;
+	else if (TrackerPos.x >= -100.f && TrackerPos.y >= 100.f)	TrackerPos.x -= 0.115;
+	else TrackerPos.y += 0.115;
 
 	//Object Movement
-	if (change.GetMagnitude() > 1.f) {
-		change = change.Normalize() / 10;
-		ObjectPos = ObjectPos + vec3(change.x, change.y, 0.f) + vec3(objectMov.x, objectMov.y, 0.f);
+	if (tracking.GetMagnitude() > 1.f) {
+		tracking = tracking.Normalize() / 10;
+		ObjectPos = ObjectPos + vec3(tracking.x, tracking.y, 0.f) + vec3(objectMov.x, objectMov.y, 0.f);
+		if (tracking.x > 0)	m_register->get<Transform>(object).SetRotationAngleZ(PI - tracking.GetAngle(vec2(0.f, 1.f)));
+		else				m_register->get<Transform>(object).SetRotationAngleZ(PI + tracking.GetAngle(vec2(0.f, 1.f)));
 	}
 
 	//Object Collision (Circular)
 	if (result.GetMagnitude() < m_register->get<Sprite>(object).GetWidth() / 2 + 20.f) {
 		result = result.Normalize();
-		if (Bounce)	movement = -movement;
+		if (Bounce)	movement = result * movement.GetMagnitude();
 		else	CurrentPosition = CurrentPosition + vec3(result.x, result.y, 0.f);
 		ObjectPos = ObjectPos + vec3(-result.x / 2.f, -result.y / 2.f, 0.f);
 	}
-	else	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime) + vec3(Acceleration.x, Acceleration.y, 0.f) * (Timer::deltaTime * Timer::deltaTime) / 2;
+	else	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime)
+		+ vec3(Acceleration.x, Acceleration.y, 0.f) * (Timer::deltaTime * Timer::deltaTime) / 2;
 
 	if (CurrentPosition.x > 250)	CurrentPosition.x = 250;
 	if (CurrentPosition.x < -250)	CurrentPosition.x = -250;
@@ -431,6 +436,28 @@ void Game::MouseMotion(SDL_MouseMotionEvent evnt)
 
 void Game::MouseClick(SDL_MouseButtonEvent evnt)
 {
+	float windowWidth = BackEnd::GetWindowWidth();
+	float windowHeight = BackEnd::GetWindowHeight();
+	if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+		vec2(click) = vec2(evnt.x / windowWidth * windowHeight / 3.5 - 100, -evnt.y / 3.5 + 100)
+			+ vec2(m_register->get<Camera>(EntityIdentifier::MainCamera()).GetPositionX(),
+			m_register->get<Camera>(EntityIdentifier::MainCamera()).GetPositionY());
+
+		for (int x(0); x < 4; x++) {
+			vec3(buttons) = m_register->get<Transform>(EntityIdentifier::Button(x)).GetPosition();
+			vec2(Pos) = click.Rotate(m_register->get<Camera>(EntityIdentifier::MainCamera()).GetRotationAngleZ()) - vec2(buttons.x, buttons.y);
+			switch (x) {
+			case 0:
+				if (Pos.GetMagnitude() <= m_register->get<Sprite>(EntityIdentifier::Object()).GetWidth() / 2)	std::cout << "Will stop you\n";
+				break;
+			case 1:
+				if (Pos.GetMagnitude() <= 20.f)	std::cout << "That's you\n";
+				break;
+			}
+		}
+
+	}
+
 	if (m_guiActive)
 	{
 		ImGui::GetIO().MousePos = ImVec2(float(evnt.x), float(evnt.y));

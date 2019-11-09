@@ -99,6 +99,8 @@ public:
 	//For use so that you can index the matrix using [] operator
 	vec2* hold[2] = { &row1, &row2 };
 
+	mat2 operator-();
+
 	mat2 operator+(mat2 m);
 	mat2 operator-(mat2 m);
 	mat2 operator*(mat2 m);

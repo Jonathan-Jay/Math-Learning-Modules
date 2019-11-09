@@ -4,6 +4,7 @@ unsigned int EntityIdentifier::m_mainCamera = 0;
 unsigned int EntityIdentifier::m_mainPlayer = 0;
 unsigned int EntityIdentifier::m_object = 0;
 unsigned int EntityIdentifier::m_tracker = 0;
+unsigned int EntityIdentifier::m_button[4] = {};
 
 unsigned int EntityIdentifier::m_cameraBit				= 0x1;
 unsigned int EntityIdentifier::m_spriteBit				= 0x10;
@@ -67,6 +68,16 @@ unsigned int EntityIdentifier::Tracker()
 bool EntityIdentifier::GetIsTracker() const
 {
 	return m_isTracker;
+}
+
+unsigned int EntityIdentifier::Button(int choice)
+{
+	return m_button[choice];
+}
+
+bool EntityIdentifier::GetIsButton(int choice) const
+{
+	return m_isButton[choice];
 }
 
 unsigned int EntityIdentifier::GetEntity() const
@@ -176,6 +187,16 @@ void EntityIdentifier::Tracker(unsigned int entity)
 void EntityIdentifier::SetIsTracker(bool main)
 {
 	m_isTracker = main;
+}
+
+void EntityIdentifier::Button(unsigned int entity, int choice)
+{
+	m_button[choice] = entity;
+}
+
+void EntityIdentifier::SetIsButton(bool main, int choice)
+{
+	m_isButton[choice] = main;
 }
 
 void EntityIdentifier::SetEntity(unsigned int entity)

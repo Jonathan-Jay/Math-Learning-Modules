@@ -72,6 +72,9 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "bun");
 		ECS::SetIsMainPlayer(entity, true);
+		ECS::SetIsButton(entity, true, 1);
+		ECS::SetIsButton(entity, true, 2);
+		ECS::SetIsButton(entity, true, 3);
 	}
 
 	{
@@ -88,6 +91,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Object");
 		ECS::SetIsObject(entity, true);
+		ECS::SetIsButton(entity, true, 0);
 	}
 	
 	{
@@ -95,7 +99,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 
 		ECS::AttachComponent<Transform>(entity);
 
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 100.f, 0.f));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 0.f));
 
 		unsigned int bitHolder = EntityIdentifier::TransformBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Tracker");

@@ -1,4 +1,5 @@
 #include "Vector.h"
+#include "Matrix.h"
 
 vec2::vec2()
 {
@@ -81,6 +82,13 @@ float vec2::GetAngle(vec2 b)
 	float denominator = a.GetMagnitude() * b.GetMagnitude();
 	
 	return acos(numerator / denominator);
+}
+
+vec2 vec2::Rotate(float angle)
+{
+	mat2(RotationMatrix) = mat2( vec2(cos(angle), -sin(angle)), vec2(sin(angle), cos(angle)) );
+	
+	return RotationMatrix * vec2(this->x, this->y);
 }
 
 float vec2::operator[](int i)

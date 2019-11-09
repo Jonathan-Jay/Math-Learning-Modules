@@ -27,6 +27,8 @@ public:
 	vec2 Project(vec2 b);
 	float GetAngle(vec2 b);
 
+	vec2 Rotate(float angle);
+
 	//Operator overload for indexing using []
 	float operator[](int i);
 	vec2 operator-();

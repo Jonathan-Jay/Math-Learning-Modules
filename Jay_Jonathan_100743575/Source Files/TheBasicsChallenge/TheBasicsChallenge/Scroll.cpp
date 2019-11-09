@@ -8,10 +8,8 @@ void Scroll::Update()
 {
 	Radians(angle) = m_cam->GetRotationAngleZ();
 	vec3(temp) = m_focus->GetPosition();
-	vec3(current) = m_cam->GetPosition();
-	current = vec3(current.x * cos(angle) - current.y * sin(angle), current.y * cos(angle) + current.x * sin(angle), current.z);
-	vec3(LP) = m_cam->m_localPosition;
-	LP = vec3(LP.x * cos(angle) - LP.y * sin(angle), LP.y * cos(angle) + LP.x * sin(angle), LP.z);
+	vec2(current) = vec2( m_cam->GetPositionX(), m_cam->GetPositionY() ).Rotate(angle);
+	vec2(LP) = vec2(m_cam->m_localPosition.x, m_cam->m_localPosition.y).Rotate(angle);
 	bool change = false;
 	
 	//above focus y
@@ -39,8 +37,8 @@ void Scroll::Update()
 	}
 
 	if (change) {
-		current = vec3(current.x * cos(-angle) - current.y * sin(-angle), current.y * cos(-angle) + current.x * sin(-angle), current.z);
-		m_cam->SetPosition(current);
+		current = current.Rotate(-angle);
+		m_cam->SetPosition(vec3(current.x, current.y, m_cam->GetPositionZ()));
 	}
 }
 

@@ -62,6 +62,11 @@ mat2 mat2::Inverse()
 	return temp;
 }
 
+mat2 mat2::operator-()
+{
+	return mat2(-row1, -row2);
+}
+
 mat2 mat2::operator+(mat2 m)
 {
 	return mat2(this->row1 + m.row1, this->row2 + m.row2);

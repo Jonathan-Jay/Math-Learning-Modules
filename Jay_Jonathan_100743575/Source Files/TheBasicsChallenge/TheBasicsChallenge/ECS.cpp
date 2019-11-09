@@ -81,3 +81,12 @@ void ECS::SetIsTracker(unsigned entity, bool Tracker)
 
 	id.SetIsTracker(Tracker);
 }
+
+void ECS::SetIsButton(unsigned entity, bool Button, int choice)
+{
+	auto& id = GetComponent<EntityIdentifier>(entity);
+
+	EntityIdentifier::Button(entity, choice);
+
+	id.SetIsButton(Button, choice);
+}
