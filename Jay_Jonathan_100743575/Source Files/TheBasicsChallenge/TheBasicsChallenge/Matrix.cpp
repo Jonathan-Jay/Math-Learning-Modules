@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include <iomanip>
 
 mat2::mat2()
 {
@@ -24,7 +25,8 @@ void mat2::Subtract(mat2 m)
 
 void mat2::Print()
 {
-	std::cout << "[ " << this->row1.x << ", " << this->row1.y << " ]\n"
+	std::cout << std::fixed << std::setprecision(2)
+		<< "[ " << this->row1.x << ", " << this->row1.y << " ]\n"
 		<< "[ " << this->row2.x << ", " << this->row2.y << " ]\n";
 }
 
@@ -147,7 +149,8 @@ void mat3::Subtract(mat3 m)
 
 void mat3::Print()
 {
-	std::cout << "[ " << this->row1.x << ", " << this->row1.y << ", " << this->row1.z << " ]\n"
+	std::cout << std::fixed << std::setprecision(2)
+		<< "[ " << this->row1.x << ", " << this->row1.y << ", " << this->row1.z << " ]\n"
 		<< "[ " << this->row2.x << ", " << this->row2.y << ", " << this->row2.z << " ]\n"
 		<< "[ " << this->row3.x << ", " << this->row3.y << ", " << this->row3.z << " ]\n";
 }
@@ -286,20 +289,24 @@ mat3 mat3::operator/(float f)
 
 mat3 mat3::operator*(mat3 m)
 {
+	vec3(Colm1) = vec3(m.row1.x, m.row1.y, m.row1.z);
+	vec3(Colm2) = vec3(m.row2.x, m.row2.y, m.row2.z);
+	vec3(Colm3) = vec3(m.row3.x, m.row3.y, m.row3.z);
+
 	vec3(Row1) = vec3(
-		this->row1.Dot(vec3(m.row1.x, m.row2.x, m.row3.x)),
-		this->row1.Dot(vec3(m.row1.y, m.row2.y, m.row3.y)),
-		this->row1.Dot(vec3(m.row1.z, m.row2.z, m.row3.z))
+		this->row1.Dot(Colm1),
+		this->row1.Dot(Colm2),
+		this->row1.Dot(Colm3)
 	);
 	vec3(Row2) = vec3(
-		this->row2.Dot(vec3(m.row1.x, m.row2.x, m.row3.x)),
-		this->row2.Dot(vec3(m.row1.y, m.row2.y, m.row3.y)),
-		this->row2.Dot(vec3(m.row1.z, m.row2.z, m.row3.z))
+		this->row2.Dot(Colm1),
+		this->row2.Dot(Colm2),
+		this->row2.Dot(Colm3)
 	);
 	vec3(Row3) = vec3(
-		this->row3.Dot(vec3(m.row1.x, m.row2.x, m.row3.x)),
-		this->row3.Dot(vec3(m.row1.y, m.row2.y, m.row3.y)),
-		this->row3.Dot(vec3(m.row1.z, m.row2.z, m.row3.z))
+		this->row3.Dot(Colm1),
+		this->row3.Dot(Colm2),
+		this->row3.Dot(Colm3)
 	);
 	
 	return mat3(Row1, Row2, Row3);
@@ -308,9 +315,9 @@ mat3 mat3::operator*(mat3 m)
 vec3 mat3::operator*(vec3 vec)
 {
 	vec3(temp) = vec3(
-		row1.Dot(vec3(vec.x, vec.y, vec.z)),
-		row2.Dot(vec3(vec.x, vec.y, vec.z)),
-		row3.Dot(vec3(vec.x, vec.y, vec.z))
+		row1.Dot(vec),
+		row2.Dot(vec),
+		row3.Dot(vec)
 	);
 
 	return temp;
@@ -356,6 +363,21 @@ vec3 mat4::Translation(mat4 mat)
 	return vec3(mat.row1.z, mat.row2.z, mat.row3.z);
 }
 
+mat4 mat4::operator-()
+{
+	return mat4(-row1, -row2, -row3, -row4);
+}
+
+mat4 mat4::operator+(mat4 m)
+{
+	return mat4(this->row1 + m.row1, this->row2 + m.row2, this->row3 + m.row3, this->row4 + m.row4);
+}
+
+mat4 mat4::operator-(mat4 m)
+{
+	return mat4(this->row1 - m.row1, this->row2 - m.row2, this->row3 - m.row3, this->row4 - m.row4);
+}
+
 vec4 mat4::operator[](int i)
 {
 	//Indexes the variables at i
@@ -364,4 +386,208 @@ vec4 mat4::operator[](int i)
 	//* 2 = row3
 	//* 3 = row4
 	return *hold[i];
+}
+
+mat4 mat4::operator*(float f)
+{
+	return mat4(this->row1 * f, this->row2 * f, this->row3 * f, this->row4 * f);
+}
+
+mat4 mat4::operator/(float f)
+{
+	return mat4(this->row1 / f, this->row2 / f, this->row3 / f, this->row4 / f);
+}
+
+mat4 mat4::operator*(mat4 m)
+{
+	vec4(Colm1) = vec4(m.row1.x, m.row2.x, m.row3.x, m.row4.x);
+	vec4(Colm2) = vec4(m.row1.y, m.row2.y, m.row3.y, m.row4.y);
+	vec4(Colm3) = vec4(m.row1.z, m.row2.z, m.row3.z, m.row4.z);
+	vec4(Colm4) = vec4(m.row1.w, m.row2.w, m.row3.w, m.row4.w);
+
+
+	vec4(Row1) = vec4(
+		this->row1.Dot(Colm1),
+		this->row1.Dot(Colm2),
+		this->row1.Dot(Colm3),
+		this->row1.Dot(Colm4)
+	);
+	vec4(Row2) = vec4(
+		this->row2.Dot(Colm1),
+		this->row2.Dot(Colm2),
+		this->row2.Dot(Colm3),
+		this->row2.Dot(Colm4)
+	);
+	vec4(Row3) = vec4(
+		this->row3.Dot(Colm1),
+		this->row3.Dot(Colm2),
+		this->row3.Dot(Colm3),
+		this->row3.Dot(Colm4)
+	);
+	vec4(Row4) = vec4(
+		this->row4.Dot(Colm1),
+		this->row4.Dot(Colm2),
+		this->row4.Dot(Colm3),
+		this->row4.Dot(Colm4)
+	);
+
+	return mat4(Row1, Row2, Row3, Row4);
+}
+
+vec4 mat4::operator*(vec4 vec)
+{
+	vec4(temp) = vec4(
+		row1.Dot(vec),
+		row2.Dot(vec),
+		row3.Dot(vec),
+		row4.Dot(vec)
+	);
+
+	return temp;
+}
+
+void mat4::Print()
+{
+	std::cout << std::fixed << std::setprecision(2)
+		<< "[ " << this->row1.x << ", " << this->row1.y << ", " << this->row1.z << ", " << this->row1.w << " ]\n"
+		<< "[ " << this->row2.x << ", " << this->row2.y << ", " << this->row2.z << ", " << this->row2.w << " ]\n"
+		<< "[ " << this->row3.x << ", " << this->row3.y << ", " << this->row3.z << ", " << this->row3.w << " ]\n"
+		<< "[ " << this->row4.x << ", " << this->row4.y << ", " << this->row4.z << ", " << this->row4.w << " ]\n";
+}
+
+mat4 mat4::Transpose()
+{
+	mat4(temp) = mat4(
+		vec4(row1.x, row2.x, row3.x, row4.x),
+		vec4(row1.y, row2.y, row3.y, row4.y),
+		vec4(row1.z, row2.z, row3.z, row4.z),
+		vec4(row1.w, row2.w, row3.w, row4.w)
+	);
+
+	return temp;
+}
+
+float mat4::Determinant()
+{	
+	vec4(temp) = CofactorMatrix().row1;
+
+	return temp.Dot(this->row1);
+}
+
+mat4 mat4::Inverse()
+{
+	float Det = Determinant();
+	mat4(Cofactor) = CofactorMatrix();
+
+	return Transpose(Cofactor) / Det;
+}
+
+mat4 mat4::CofactorMatrix()
+{
+	vec4(R1) = vec4(
+		mat3(
+			vec3(row2.y, row2.z, row2.w),
+			vec3(row3.y, row3.z, row3.w),
+			vec3(row4.y, row4.z, row4.w)
+		).Determinant(),
+		-mat3(
+			vec3(row2.x, row2.z, row2.w),
+			vec3(row3.x, row3.z, row3.w),
+			vec3(row4.x, row4.z, row4.w)
+		).Determinant(),
+		mat3(
+			vec3(row2.x, row2.y, row2.w),
+			vec3(row3.x, row3.y, row3.w),
+			vec3(row4.x, row4.y, row4.w)
+		).Determinant(),
+		-mat3(
+			vec3(row2.x, row2.y, row2.z),
+			vec3(row3.x, row3.y, row3.z),
+			vec3(row4.x, row4.y, row4.z)
+		).Determinant()
+	);
+
+	vec4(R2) = vec4(
+		-mat3(
+			vec3(row1.y, row1.z, row1.w),
+			vec3(row3.y, row3.z, row3.w),
+			vec3(row4.y, row4.z, row4.w)
+		).Determinant(),
+		mat3(
+			vec3(row1.x, row1.z, row1.w),
+			vec3(row3.x, row3.z, row3.w),
+			vec3(row4.x, row4.z, row4.w)
+		).Determinant(),
+		-mat3(
+			vec3(row1.x, row1.y, row1.w),
+			vec3(row3.x, row3.y, row3.w),
+			vec3(row4.x, row4.y, row4.w)
+		).Determinant(),
+		mat3(
+			vec3(row1.x, row1.y, row1.z),
+			vec3(row3.x, row3.y, row3.z),
+			vec3(row4.x, row4.y, row4.z)
+		).Determinant()
+	);
+
+	vec4(R3) = vec4(
+		mat3(
+			vec3(row1.y, row1.z, row1.w),
+			vec3(row2.y, row2.z, row2.w),
+			vec3(row4.y, row4.z, row4.w)
+		).Determinant(),
+		-mat3(
+			vec3(row1.x, row1.z, row1.w),
+			vec3(row2.x, row2.z, row2.w),
+			vec3(row4.x, row4.z, row4.w)
+		).Determinant(),
+		mat3(
+			vec3(row1.x, row1.y, row1.w),
+			vec3(row2.x, row2.y, row2.w),
+			vec3(row4.x, row4.y, row4.w)
+		).Determinant(),
+		-mat3(
+			vec3(row1.x, row1.y, row1.z),
+			vec3(row2.x, row2.y, row2.z),
+			vec3(row4.x, row4.y, row4.z)
+		).Determinant()
+	);
+
+	vec4(R4) = vec4(
+		-mat3(
+			vec3(row1.y, row1.z, row1.w),
+			vec3(row2.y, row2.z, row2.w),
+			vec3(row3.y, row3.z, row3.w)
+		).Determinant(),
+		mat3(
+			vec3(row1.x, row1.z, row1.w),
+			vec3(row2.x, row2.z, row2.w),
+			vec3(row3.x, row3.z, row3.w)
+		).Determinant(),
+		-mat3(
+			vec3(row1.x, row1.y, row1.w),
+			vec3(row2.x, row2.y, row2.w),
+			vec3(row3.x, row3.y, row3.w)
+		).Determinant(),
+		mat3(
+			vec3(row1.x, row1.y, row1.z),
+			vec3(row2.x, row2.y, row2.z),
+			vec3(row3.x, row3.y, row3.z)
+		).Determinant()
+	);
+
+	return mat4(R1, R2, R3, R4);
+}
+
+mat4 mat4::Transpose(mat4 R)
+{
+
+	mat4(temp) = mat4(
+		vec4(R.row1.x, R.row2.x, R.row3.x, R.row4.x),
+		vec4(R.row1.y, R.row2.y, R.row3.y, R.row4.y),
+		vec4(R.row1.z, R.row2.z, R.row3.z, R.row4.z),
+		vec4(R.row1.w, R.row2.w, R.row3.w, R.row4.w)
+	);
+
+	return temp;
 }

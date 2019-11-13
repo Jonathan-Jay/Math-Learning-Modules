@@ -83,8 +83,8 @@ private:
 	static unsigned int m_tracker;
 	bool m_isTracker = false;
 
-	static unsigned int m_button[4];
-	bool m_isButton[4] = {};
+	static unsigned int m_button[10];
+	bool m_isButton[10] = {};
 
 	//Stores the entity number
 	unsigned int m_entity;
@@ -128,8 +128,8 @@ inline void to_json(nlohmann::json& j, const EntityIdentifier& id)
 	//Stores whether or not this is the tracker
 	j["Tracker"] = id.GetIsTracker();
 
-	for (int x(0); x < 4; x++) {
-		j["Button"] = id.GetIsButton(x);
+	for (int x(0); x < 10; x++) {
+		j["Button" + std::to_string(x)] = id.GetIsButton(x);
 	}
 
 	//Stores the name of this entity
@@ -154,9 +154,10 @@ inline void from_json(const nlohmann::json& j, EntityIdentifier& id)
 	//Grabs whether or not this is the tracker
 	id.SetIsTracker(j["Tracker"]);
 
-	for (int x(0); x < 4; x++) {
-		id.SetIsButton(j["Button"], x);
+	for (int x(0); x < 10; x++) {
+		id.SetIsButton(j["Button" + std::to_string(x)], x);
 	}
+
 	//Grabs the name of this entity
 	id.SetName(j["Name"]);
 }

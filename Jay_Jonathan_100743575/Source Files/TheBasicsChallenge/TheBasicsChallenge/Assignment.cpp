@@ -73,8 +73,6 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		ECS::SetUpIdentifier(entity, bitHolder, "bun");
 		ECS::SetIsMainPlayer(entity, true);
 		ECS::SetIsButton(entity, true, 1);
-		ECS::SetIsButton(entity, true, 2);
-		ECS::SetIsButton(entity, true, 3);
 	}
 
 	{

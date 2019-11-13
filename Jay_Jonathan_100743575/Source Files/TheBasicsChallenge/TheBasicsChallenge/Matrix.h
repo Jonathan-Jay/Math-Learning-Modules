@@ -59,6 +59,17 @@ public:
 	//creates a 4x4 matrix using a 3x3 rotation matrix and a 3D translation vector
 	mat4(mat3 rot, vec3 trans);
 
+	void Add(mat4 m);
+	void Subtract(mat4 m);
+
+	void Print();
+	mat4 Transpose();
+	float Determinant();
+	mat4 Inverse();
+	mat4 CofactorMatrix();
+
+	static mat4 Transpose(mat4 R);
+
 	//Gets the fast inverse of a homogenous transformation matrix
 	static mat4 FastInverse(mat4 mat);
 	//Gets the translation data from a homogenous transformation matrix
@@ -72,8 +83,17 @@ public:
 	//For use so that you can index the matrix using [] operator
 	vec4* hold[4] = { &row1, &row2, &row3, &row4 };
 
+	mat4 operator-();
+
+	mat4 operator+(mat4 m);
+	mat4 operator-(mat4 m);
 	//For use so that you can index the matrix using [] operator
 	vec4 operator[](int i);
+
+	mat4 operator*(float f);
+	mat4 operator/(float f);
+	mat4 operator*(mat4 m);
+	vec4 operator*(vec4 vec);
 };
 
 

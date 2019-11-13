@@ -223,14 +223,14 @@ void Game::KeyboardHold(int mainplayer)
 {
 	//Keyboard button held
 	if (Input::GetKey(Key::Space) && Width > 0.01 && Height > 0.01) {
-		Width *= 0.99;
-		Height *= 0.99;
-		weight *= 0.997;
+		Width *= 0.99f;
+		Height *= 0.99f;
+		weight *= 0.997f;
 	}
 	else if (Height < 54 || Width < 59) {
-		Width *= 1.1;
-		Height *= 1.1;
-		if (weight < 1)	weight *= 1.1;
+		Width *= 1.1f;
+		Height *= 1.1f;
+		if (weight < 1)	weight *= 1.1f;
 	}
 	if (Height > 54 || Width > 59) {
 		Height = 54;
@@ -316,10 +316,10 @@ void Game::MovementKey(int mainplayer, int tracker)
 	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		Force.y -= 200.f;
 	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	Force.x += 200.f;
 
-	if (Input::GetKey(Key::I))	objectMov.y += 0.25f;
-	if (Input::GetKey(Key::J))	objectMov.x -= 0.25f;
-	if (Input::GetKey(Key::K))	objectMov.y -= 0.25f;
-	if (Input::GetKey(Key::L))	objectMov.x += 0.25f;
+	if (Input::GetKey(Key::I))	objectMov.y += 100.f;
+	if (Input::GetKey(Key::J))	objectMov.x -= 100.f;
+	if (Input::GetKey(Key::K))	objectMov.y -= 100.f;
+	if (Input::GetKey(Key::L))	objectMov.x += 100.f;
 }
 
 void Game::Movement(int mainplayer, int object, int tracker)
@@ -335,7 +335,7 @@ void Game::Movement(int mainplayer, int object, int tracker)
 			CurrentAnim.SetSecPerFrame(27.f / (movement.GetMagnitude() + 300.f));
 		}
 
- 		if (Deccel)	movement = movement * 0.995;
+ 		if (Deccel)	movement = movement * 0.995f;
 
  		if (movement.x > 0.1f) {
 			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
@@ -345,7 +345,7 @@ void Game::Movement(int mainplayer, int object, int tracker)
 			m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
 			m_register->get<Transform>(mainplayer).SetRotationAngleZ(-(PI / 2 - movement.GetAngle(vec2(0.f, 1.f))));
 		}
-		if (movement.GetMagnitude() < 1.f) movement = vec2(0.f, 0.f);
+		if (movement.GetMagnitude() < 0.5f) movement = vec2(0.f, 0.f);
 	}
 	else {
 		if (CurrentAnim.GetSecPerFrame() != 0.09f) {
@@ -377,16 +377,17 @@ void Game::Movement(int mainplayer, int object, int tracker)
 	vec2(result) = Pos1 - Pos2;
 
 	//Tracker Movement
-	if (TrackerPos.x <= -100.f && TrackerPos.y >= -100.f)		TrackerPos.y -= 0.115;
-	else if (TrackerPos.x <= 100.f && TrackerPos.y <= -100.f)	TrackerPos.x += 0.115;
-	else if (TrackerPos.x >= 100.f && TrackerPos.y <= 100.f)	TrackerPos.y += 0.115;
-	else if (TrackerPos.x >= -100.f && TrackerPos.y >= 100.f)	TrackerPos.x -= 0.115;
-	else TrackerPos.y += 0.115;
+	if (TrackerPos.x <= -100.f && TrackerPos.y >= -100.f)		TrackerPos.y -= 45.f * Timer::deltaTime;
+	else if (TrackerPos.x <= 100.f && TrackerPos.y <= -100.f)	TrackerPos.x += 45.f * Timer::deltaTime;
+	else if (TrackerPos.x >= 100.f && TrackerPos.y <= 100.f)	TrackerPos.y += 45.f * Timer::deltaTime;
+	else if (TrackerPos.x >= -100.f && TrackerPos.y >= 100.f)	TrackerPos.x -= 45.f * Timer::deltaTime;
+	else TrackerPos.y += 45.f * Timer::deltaTime;
 
 	//Object Movement
 	if (tracking.GetMagnitude() > 1.f) {
-		tracking = tracking.Normalize() / 10;
-		ObjectPos = ObjectPos + vec3(tracking.x, tracking.y, 0.f) + vec3(objectMov.x, objectMov.y, 0.f);
+		tracking = tracking.Normalize() * 40.f;
+		ObjectPos = ObjectPos + vec3(tracking.x + objectMov.x, tracking.y + objectMov.y, 0.f) * Timer::deltaTime;
+
 		if (tracking.x > 0)	m_register->get<Transform>(object).SetRotationAngleZ(PI - tracking.GetAngle(vec2(0.f, 1.f)));
 		else				m_register->get<Transform>(object).SetRotationAngleZ(PI + tracking.GetAngle(vec2(0.f, 1.f)));
 	}
@@ -396,6 +397,7 @@ void Game::Movement(int mainplayer, int object, int tracker)
 		result = result.Normalize();
 		if (Bounce)	movement = result * movement.GetMagnitude();
 		else	CurrentPosition = CurrentPosition + vec3(result.x, result.y, 0.f);
+
 		ObjectPos = ObjectPos + vec3(-result.x / 2.f, -result.y / 2.f, 0.f);
 	}
 	else	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime)
@@ -414,6 +416,7 @@ void Game::Movement(int mainplayer, int object, int tracker)
 	m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition);
 	m_register->get<Transform>(object).SetPosition(ObjectPos);
 	m_register->get<Transform>(tracker).SetPosition(TrackerPos);
+
 	Force = vec2(0.f, -0.f);
 	objectMov = vec2(0.f, -0.f);
 }
@@ -436,19 +439,20 @@ void Game::MouseMotion(SDL_MouseMotionEvent evnt)
 
 void Game::MouseClick(SDL_MouseButtonEvent evnt)
 {
+	int maincamera = EntityIdentifier::MainCamera();
 	float windowWidth = BackEnd::GetWindowWidth();
 	float windowHeight = BackEnd::GetWindowHeight();
 	if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-		vec2(click) = vec2(evnt.x / windowWidth * windowHeight / 3.5 - 100, -evnt.y / 3.5 + 100)
-			+ vec2(m_register->get<Camera>(EntityIdentifier::MainCamera()).GetPositionX(),
-			m_register->get<Camera>(EntityIdentifier::MainCamera()).GetPositionY());
+		vec2(click) = vec2(evnt.x / windowWidth * windowHeight / 3.5f - 100.f, -evnt.y / 3.5f + 100.f)
+			+ vec2(m_register->get<Camera>(maincamera).GetPositionX(),
+			m_register->get<Camera>(maincamera).GetPositionY());
 
-		for (int x(0); x < 4; x++) {
+		for (int x(0); x < 2; x++) {
 			vec3(buttons) = m_register->get<Transform>(EntityIdentifier::Button(x)).GetPosition();
-			vec2(Pos) = click.Rotate(m_register->get<Camera>(EntityIdentifier::MainCamera()).GetRotationAngleZ()) - vec2(buttons.x, buttons.y);
+			vec2(Pos) = click.Rotate(m_register->get<Camera>(maincamera).GetRotationAngleZ()) - vec2(buttons.x, buttons.y);
 			switch (x) {
 			case 0:
-				if (Pos.GetMagnitude() <= m_register->get<Sprite>(EntityIdentifier::Object()).GetWidth() / 2)	std::cout << "Will stop you\n";
+				if (Pos.GetMagnitude() <= m_register->get<Sprite>(EntityIdentifier::Button(0)).GetWidth() / 2.f)	std::cout << "Will stop you\n";
 				break;
 			case 1:
 				if (Pos.GetMagnitude() <= 20.f)	std::cout << "That's you\n";
