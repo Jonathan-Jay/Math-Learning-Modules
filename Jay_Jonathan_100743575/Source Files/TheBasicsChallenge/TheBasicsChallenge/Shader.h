@@ -10,8 +10,6 @@
 #include <GL/glew.h>
 #include "Camera.h"
 
-#pragma comment(lib, "Matrix.lib")
-
 #include "Matrix.h"
 
 class Shader

@@ -443,7 +443,10 @@ void Game::MouseClick(SDL_MouseButtonEvent evnt)
 	float windowWidth = BackEnd::GetWindowWidth();
 	float windowHeight = BackEnd::GetWindowHeight();
 	if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-		vec2(click) = vec2(evnt.x / windowWidth * windowHeight / 3.5f - 100.f, -evnt.y / 3.5f + 100.f)
+		vec2(click) = vec2(
+			evnt.x / windowHeight * 200.f - 100.f * windowWidth / windowHeight,
+			-evnt.y / windowHeight * 200.f + 100.f
+			)
 			+ vec2(m_register->get<Camera>(maincamera).GetPositionX(),
 			m_register->get<Camera>(maincamera).GetPositionY());
 
