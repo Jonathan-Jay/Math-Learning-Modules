@@ -57,7 +57,6 @@ private:
 	static entt::registry* m_reg;
 };
 
-#endif // !__ECS_H__
 
 template<typename T>
 inline void ECS::AttachComponent(unsigned entity)
@@ -93,3 +92,5 @@ inline bool ECS::HasComponent(unsigned entity)
 {
 	return m_reg->has<T>(entity);
 }
+
+#endif // !__ECS_H__

@@ -591,3 +591,292 @@ mat4 mat4::Transpose(mat4 R)
 
 	return temp;
 }
+
+matNxM::matNxM()
+{
+	printf("no size given, will create a mat5\n");
+	m_components.resize(5);
+	for (int x(0); x < 5; x++) {
+		m_components[x].resize(5);
+	}
+}
+
+matNxM::matNxM(int sizeN, int sizeM)
+{
+	if (sizeN <= 0 || sizeM <= 0) {
+		printf("Send positive size\n");
+	}
+	else {
+		m_components.resize(sizeN);
+		for (int x(0); x < sizeN; x++) {
+			m_components[x].resize(sizeM);
+		}
+	}
+}
+
+matNxM::matNxM(vecN vec)
+{
+	m_components.resize(1);
+	m_components[0].resize(vec.GetSize());
+	for (int x(0); x < vec.GetSize(); x++) {
+		m_components[0][x] = vec[x];
+	}
+}
+
+int matNxM::GetSizeN()
+{
+	return m_components.size();
+}
+
+int matNxM::GetSizeM()
+{
+	return m_components[0].size();
+}
+
+void matNxM::Print()
+{
+	std::cout << std::fixed << std::setprecision(2);
+	for (int y(0); y < GetSizeM(); y++) {
+		std::cout << "[ ";
+		for (int x(0); x < GetSizeN(); x++) {
+			std::cout << this->m_components[x][y];
+			if (x < GetSizeN() - 1) {
+				std::cout << ", ";
+			}
+		}
+		std::cout << " ]\n";
+	}
+}
+
+matNxM matNxM::Transpose()
+{
+	matNxM temp(GetSizeM(), GetSizeN());
+
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < GetSizeN(); x++) {
+			temp.m_components[y][x] = this->m_components[x][y];
+		}
+	}
+
+	return temp;
+}
+
+float matNxM::Determinant()
+{
+	if (GetSizeN() != GetSizeM()) {
+		printf("matrix isn't square\n");
+		return -1.f;
+	}
+	
+	float temp = 0.f;
+	
+	vecN row(GetSizeN());
+
+	row = CofactorMatrix()[0];
+
+	temp = row.Dot(this->operator[](0));
+
+	return temp;
+}
+
+matNxM matNxM::CofactorMatrix()
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+	
+	if (GetSizeN() != GetSizeM()) {
+		printf("matrix isn't square\n");
+		return temp;
+	}
+
+	if (GetSizeM() <= 4) {
+		if (GetSizeM() == 4) {
+			mat4 result;
+			result = mat4(
+				vec4(this->m_components[0][0], this->m_components[0][1], this->m_components[0][2], this->m_components[0][3]),
+				vec4(this->m_components[1][0], this->m_components[1][1], this->m_components[1][2], this->m_components[1][3]),
+				vec4(this->m_components[2][0], this->m_components[2][1], this->m_components[2][2], this->m_components[2][3]),
+				vec4(this->m_components[3][0], this->m_components[3][1], this->m_components[3][2], this->m_components[3][3])
+			).CofactorMatrix();
+
+			for (int y(0); y < 4; y++) {
+				for (int x(0); x < 4; x++) {
+					temp.m_components[x][y] = result[x][y];
+				}
+			}
+		}
+		else {
+			std::cout << "use existing matrix sizes\n";
+		}
+
+		return temp;
+	}
+	else {
+		for (int y(0); y < GetSizeM(); y++) {
+			for (int x(0); x < GetSizeN(); x++) {
+				matNxM result(GetSizeN() - 1, GetSizeM() - 1);
+				bool isaboveM = 0;
+
+				for (int M(0); M < GetSizeM(); M++) {
+					bool isaboveN = 0;
+					for (int N(0); N < GetSizeN(); N++) {
+						if (M == y) {
+							isaboveM = 1;
+							break;
+						}
+						if (N == x) {
+							isaboveN = 1;
+							continue;
+						}
+						
+						result.m_components[N - isaboveN][M - isaboveM] = this->m_components[N][M];
+					}
+				}
+
+				temp.m_components[x][y] = pow(-1, x + y) * result.Determinant();
+			}
+		}
+	}
+
+	return temp;
+}
+
+matNxM matNxM::Inverse()
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+	
+	if (GetSizeN() != GetSizeM()) {
+		printf("matrix isn't square\n");
+		return temp;
+	}
+
+	float Det = Determinant();
+	temp = CofactorMatrix();
+
+	return temp.Transpose() / Det;
+}
+
+matNxM matNxM::operator-()
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < GetSizeN(); x++) {
+			temp.m_components[x][y] = -this->m_components[x][y];
+		}
+	}
+
+	return temp;
+}
+
+matNxM matNxM::operator+(matNxM m)
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+
+	if (GetSizeM() != m.GetSizeM() || GetSizeN() != m.GetSizeN()) {
+		printf("Both matrices are not the same size\n");
+		return temp;
+	}
+
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < GetSizeN(); x++) {
+			temp.m_components[x][y] = this->m_components[x][y] + m[x][y];
+		}
+	}
+
+	return temp;
+}
+
+matNxM matNxM::operator-(matNxM m)
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+
+	if (GetSizeM() != m.GetSizeM() || GetSizeN() != m.GetSizeN()) {
+		printf("Both matrices are not the same size\n");
+		return temp;
+	}
+	
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < GetSizeN(); x++) {
+			temp.m_components[x][y] = this->m_components[x][y] - m[x][y];
+		}
+	}
+
+	return temp;
+}
+
+matNxM matNxM::operator*(matNxM m)
+{
+	matNxM temp(m.GetSizeN(), GetSizeM());
+
+	if (GetSizeN() != m.GetSizeM()) {
+		printf("matrix sizes won't work\n");
+		return temp;
+	}
+
+	//it can call MxN using [] = row[y] and column[x]
+	matNxM row(GetSizeM(), GetSizeN());		row.m_components = (this->Transpose()).m_components;
+	matNxM column(m.GetSizeN(), m.GetSizeM());	column.m_components = m.m_components;
+
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < m.GetSizeN(); x++) {
+			temp.m_components[x][y] = column[x].Dot(row[y]);
+		}
+	}
+
+	return temp;
+}
+
+vecN matNxM::operator*(vecN v)
+{
+	vecN temp(GetSizeM());
+
+	if (GetSizeN() != v.GetSize()) {
+		printf("matrix size won't work\n");
+		return temp;
+	}
+	
+	matNxM row(GetSizeM(), GetSizeN());		row.m_components = (this->Transpose()).m_components;
+
+	for (int x(0); x < GetSizeM(); x++) {
+		temp.m_components[x] = row[x].Dot(v);
+	}
+
+	return temp;
+}
+
+matNxM matNxM::operator*(float f)
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < GetSizeN(); x++) {
+			temp.m_components[x][y] = this->m_components[x][y] * f;
+		}
+	}
+
+	return temp;
+}
+
+matNxM matNxM::operator/(float f)
+{
+	matNxM temp(GetSizeN(), GetSizeM());
+
+	for (int y(0); y < GetSizeM(); y++) {
+		for (int x(0); x < GetSizeN(); x++) {
+			temp.m_components[x][y] = this->m_components[x][y] / f;
+		}
+	}
+
+	return temp;
+}
+
+vecN matNxM::operator[](int i)
+{
+	vecN temp(GetSizeM());
+	
+	for (int x(0); x < GetSizeM(); x++) {
+		temp.m_components[x] = this->m_components[i][x];
+	}
+
+	return temp;
+}

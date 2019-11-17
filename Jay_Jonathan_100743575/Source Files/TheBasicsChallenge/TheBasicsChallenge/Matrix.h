@@ -131,4 +131,37 @@ public:
 	vec2 operator[](int i);
 };
 
+class matNxM
+{
+public:
+	//Empty constructor
+	matNxM();
+	//sets row1 and row2
+	matNxM(int sizeN, int sizeM);
+
+	matNxM(vecN vec);
+
+	std::vector<std::vector<float>> m_components;
+
+	int GetSizeN();
+	int GetSizeM();
+
+	void Print();
+	matNxM Transpose();
+	float Determinant();
+	matNxM CofactorMatrix();
+	matNxM Inverse();
+
+	matNxM operator-();
+
+	matNxM operator+(matNxM m);
+	matNxM operator-(matNxM m);
+	matNxM operator*(matNxM m);
+	vecN operator*(vecN v);
+
+	matNxM operator*(float f);
+	matNxM operator/(float f);
+	vecN operator[](int column);
+};
+
 #endif // !__MATRIX_H__

@@ -46,8 +46,8 @@ void EntityManager::CreateManager()
 		Degrees CameraRot = Transform::ToDegrees(-m_register->get<Camera>(maincamera).GetRotationAngleZ());
 
 		if (ImGui::Button("Reset All", ImVec2(200.f, 20.f))) {
-			MainPlayerPos = vec3(0.f, 0.f, 50.f);
-			ObjectPos = vec3(0.f, 50.f, 10.f);
+			MainPlayerPos = vec3(0.f, 0.f, 0.f);
+			ObjectPos = vec3(0.f, 100.f, 10.f);
 			CameraRot = 0.f;
 			Scalar = 20.f;
 			randomized = false;

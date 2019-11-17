@@ -41,10 +41,25 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		std::string filename = "Background.png";
 		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 670, 670);
 
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 0.f));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, -10.f));
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Background");
+	}
+	
+	{
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+
+		std::string filename = "FrontFence.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 670, 670);
+
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 20.f));
+
+		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "Front Fence");
 	}
 
 	{
@@ -67,7 +82,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 
 		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 59, 54, true, &animController);
 
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 10.f));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 0.f));
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "bun");
@@ -84,7 +99,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		std::string filename = "STOP.png";
 		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 20, 20);
 
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 50.f, 10.f));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 100.f, 10.f));
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Object");
@@ -102,6 +117,120 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		unsigned int bitHolder = EntityIdentifier::TransformBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Tracker");
 		ECS::SetIsTracker(entity, true);
+	}
+
+	{
+		auto Fairy = File::LoadJSON("Fairy.json");
+
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<AnimationController>(entity);
+
+		std::string filename = "fairy.png";
+		auto& animController = ECS::GetComponent<AnimationController>(entity);
+		animController.InitUVs(filename);
+
+		animController.AddAnimation(Fairy["fairy1left"]);
+		animController.AddAnimation(Fairy["fairy1right"]);
+		animController.AddAnimation(Fairy["fairy2left"]);
+		animController.AddAnimation(Fairy["fairy2right"]);
+		animController.AddAnimation(Fairy["fairy3left"]);
+		animController.AddAnimation(Fairy["fairy3right"]);
+
+		animController.SetActiveAnim(0);
+
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 28, 27, true, &animController);
+
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -50.f, 5.f));
+
+		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "fairy1");
+	}
+	{
+		auto Fairy = File::LoadJSON("Fairy.json");
+
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<AnimationController>(entity);
+
+		std::string filename = "fairy.png";
+		auto& animController = ECS::GetComponent<AnimationController>(entity);
+		animController.InitUVs(filename);
+
+		animController.AddAnimation(Fairy["fairy1left"]);
+		animController.AddAnimation(Fairy["fairy1right"]);
+		animController.AddAnimation(Fairy["fairy2left"]);
+		animController.AddAnimation(Fairy["fairy2right"]);
+		animController.AddAnimation(Fairy["fairy3left"]);
+		animController.AddAnimation(Fairy["fairy3right"]);
+
+		animController.SetActiveAnim(4);
+
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 28, 27, true, &animController);
+
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(50.f, 0.f, 5.f));
+
+		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "fairy2");
+	}
+	{
+		auto Fairy = File::LoadJSON("Fairy.json");
+
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<AnimationController>(entity);
+
+		std::string filename = "fairy.png";
+		auto& animController = ECS::GetComponent<AnimationController>(entity);
+		animController.InitUVs(filename);
+
+		animController.AddAnimation(Fairy["fairy1left"]);
+		animController.AddAnimation(Fairy["fairy1right"]);
+		animController.AddAnimation(Fairy["fairy2left"]);
+		animController.AddAnimation(Fairy["fairy2right"]);
+		animController.AddAnimation(Fairy["fairy3left"]);
+		animController.AddAnimation(Fairy["fairy3right"]);
+
+		animController.SetActiveAnim(5);
+
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 28, 27, true, &animController);
+
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(-50.f, 0.f, 5.f));
+
+		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "fairy3");
+	}
+
+	{
+		auto controller = File::LoadJSON("Controller.json");
+
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<AnimationController>(entity);
+
+		std::string filename = "controller.png";
+		auto& animController = ECS::GetComponent<AnimationController>(entity);
+		animController.InitUVs(filename);
+
+		animController.AddAnimation(controller["controller"]);
+
+		animController.SetActiveAnim(0);
+
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 20, 14, true, &animController);
+
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 25.f, 5.f));
+
+		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "controller");
+		ECS::SetIsButton(entity, true, 2);
 	}
 
 	ECS::GetComponent<Scroll>(EntityIdentifier::MainCamera()).SetFocus(&ECS::GetComponent<Transform>(EntityIdentifier::MainPlayer()));

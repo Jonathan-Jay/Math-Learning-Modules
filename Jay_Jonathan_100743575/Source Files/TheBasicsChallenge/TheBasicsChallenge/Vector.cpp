@@ -326,3 +326,135 @@ vec4 vec4::operator/(float s)
 {
 	return vec4(this->x / s, this->y / s, this->z / s, this->w / s);
 }
+
+vecN::vecN()
+{
+	printf("no size given, will create a vec5\n");
+	m_components.resize(5);
+}
+
+vecN::vecN(int size)
+{
+	if (size <= 0) {
+		printf("Send positive size\n");
+	}
+	m_components.resize(size);
+}
+
+int vecN::GetSize()
+{
+	return m_components.size();
+}
+
+float vecN::Dot(vecN v2)
+{
+	if (GetSize() != v2.GetSize()) {
+		printf("Both vecN are not the same size\n");
+		return -1.f;
+	}
+
+	float temp = 0.f;
+
+	for (int x(0); x < GetSize(); x++) {
+		temp += this->m_components[x] * v2[x];
+	}
+
+	return temp;
+}
+
+float vecN::GetMagnitude()
+{
+	float temp = 0.f;
+	
+	for (int x(0); x < GetSize(); x++) {
+		temp += this->m_components[x] * this->m_components[x];
+	}
+
+	return float(sqrt(temp));
+}
+
+float vecN::GetMagnitudeSquared()
+{
+	float magnitude = GetMagnitude();
+	
+	return magnitude * magnitude;
+}
+
+vecN vecN::Normalize()
+{
+	vecN(temp) = *this;
+
+	return temp / GetMagnitude();
+}
+
+float vecN::operator[](int i)
+{
+	if (i < 0 || i >= GetSize()) {
+		printf("Wrong size\n");
+		return -1.f;
+	}
+	
+	return m_components[i];
+}
+
+vecN vecN::operator-()
+{
+	vecN(temp) = GetSize();
+	for (int x(0); x < GetSize(); x++) {
+		temp.m_components[x] = -this->m_components[x];
+	}
+	
+	return temp;
+}
+
+vecN vecN::operator+(vecN v2)
+{
+	vecN(temp) = GetSize();
+
+	if (GetSize() != v2.GetSize()) {
+		printf("Both vecN are not the same size\n");
+		return temp;
+	}
+	
+	for (int x(0); x < GetSize(); x++) {
+		temp.m_components[x] = this->m_components[x] + v2[x];
+	}
+	
+	return temp;
+}
+
+vecN vecN::operator-(vecN v2)
+{
+	vecN(temp) = GetSize();
+
+	if (GetSize() != v2.GetSize()) {
+		printf("Both vecN are not the same size\n");
+		return temp;
+	}
+
+	for (int x(0); x < GetSize(); x++) {
+		temp.m_components[x] = this->m_components[x] - v2[x];
+	}
+
+	return temp;
+}
+
+vecN vecN::operator*(float s)
+{
+	vecN(temp) = GetSize();
+	for (int x(0); x < GetSize(); x++) {
+		temp.m_components[x] = this->m_components[x] * s;
+	}
+
+	return temp;
+}
+
+vecN vecN::operator/(float s)
+{
+	vecN(temp) = GetSize();
+	for (int x(0); x < GetSize(); x++) {
+		temp.m_components[x] = this->m_components[x] / s;
+	}
+
+	return temp;
+}

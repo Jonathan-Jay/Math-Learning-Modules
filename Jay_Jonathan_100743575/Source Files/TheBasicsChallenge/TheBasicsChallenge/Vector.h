@@ -1,6 +1,7 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 #include <math.h>
+#include <vector>
 
 class vec2
 {
@@ -106,6 +107,35 @@ public:
 
 	vec4 operator*(float s);
 	vec4 operator/(float s);
+};
+
+class vecN
+{
+public:
+	
+	//creates a Vec5 (default size)
+	vecN();
+
+	//creates a vecN of size "size"
+	vecN(int size);
+
+	std::vector<float> m_components;
+
+	int GetSize();
+
+	float Dot(vecN v2);
+	float GetMagnitude();
+	float GetMagnitudeSquared();
+	vecN Normalize();
+
+	//Operator overload for indexing using []
+	float operator[](int i);
+	vecN operator-();
+	vecN operator+(vecN v2);
+	vecN operator-(vecN v2);
+
+	vecN operator*(float s);
+	vecN operator/(float s);
 };
 
 #endif // !__VECTOR_H__

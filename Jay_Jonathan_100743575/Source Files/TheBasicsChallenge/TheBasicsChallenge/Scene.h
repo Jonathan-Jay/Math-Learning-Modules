@@ -152,7 +152,7 @@ inline void from_json(const nlohmann::json& j, Scene& scene)
 		{
 			EntityIdentifier::Tracker(entity);
 		}
-		for (int x(0); x < 10; x++) {
+		for (int x(0); x < 3; x++) {
 			if (reg.get<EntityIdentifier>(entity).GetIsButton(x))
 			{
 				EntityIdentifier::Button(entity, x);
