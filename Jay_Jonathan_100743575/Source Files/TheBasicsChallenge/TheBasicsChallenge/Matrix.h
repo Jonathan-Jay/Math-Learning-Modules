@@ -149,7 +149,7 @@ public:
 	void Print();
 	matNxM Transpose();
 	float Determinant();
-	matNxM CofactorMatrix();
+	matNxM CofactorMatrix(bool infunction = false);
 	matNxM Inverse();
 
 	matNxM operator-();

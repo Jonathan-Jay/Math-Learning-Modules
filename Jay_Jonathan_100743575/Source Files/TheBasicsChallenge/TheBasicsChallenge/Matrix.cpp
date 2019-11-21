@@ -672,20 +672,22 @@ float matNxM::Determinant()
 	
 	vecN row(GetSizeN());
 
-	row = CofactorMatrix()[0];
+	row = CofactorMatrix(true)[0];
 
 	temp = row.Dot(this->operator[](0));
 
 	return temp;
 }
 
-matNxM matNxM::CofactorMatrix()
+matNxM matNxM::CofactorMatrix(bool infunction)
 {
 	matNxM temp(GetSizeN(), GetSizeM());
 	
-	if (GetSizeN() != GetSizeM()) {
-		printf("matrix isn't square\n");
-		return temp;
+	if (!infunction) {
+		if (GetSizeN() != GetSizeM()) {
+			printf("matrix isn't square\n");
+			return temp;
+		}
 	}
 
 	if (GetSizeM() <= 4) {
@@ -733,6 +735,8 @@ matNxM matNxM::CofactorMatrix()
 				}
 
 				temp.m_components[x][y] = pow(-1, x + y) * result.Determinant();
+
+				if (infunction)		break;
 			}
 		}
 	}
