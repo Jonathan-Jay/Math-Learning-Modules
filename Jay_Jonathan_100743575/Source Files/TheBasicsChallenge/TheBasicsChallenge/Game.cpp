@@ -151,53 +151,6 @@ void Game::AcceptInput()
 	//Must be done once per frame for input to work
 	Input::ResetKeys();
 	Game::Movement(mainplayer, object, tracker);
-
-	matNxM temp(10, 7);
-	temp.m_components[5][1] = 1;
-	temp.Print();
-	std::cout << temp[5][1] << '\n';
-	temp = temp * 3;
-
-
-	matNxM temp2(7, 10);
-	temp2 = (-temp).Transpose();
-	temp2.Print();
-
-	//Matrix and vector multiplication
-	vecN temp3(10);
-	temp3.m_components[5] = 3;
-	temp3 = temp * temp3;
-	matNxM temp4(temp3);
-	temp4.Print();
-
-	matNxM one(3, 2);
-	matNxM two(4, 3);
-	one.m_components[0] = { 2, 0 };
-	one.m_components[1] = { 1, 1 };
-	one.m_components[2] = { 4, 1 };
-
-	two.m_components[0] = { 6, 1, -2 };
-	two.m_components[1] = { 3, 1, 5 };
-	two.m_components[2] = { -1, 0, 0 };
-	two.m_components[3] = { 0, 4, 2 };
-
-	matNxM temp9000(4, 2);
-	temp9000 = one * two;
-	temp9000.Print();
-
-	matNxM temp9001(6, 6);
-
-	temp9001.m_components[0] = { rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f };
-	temp9001.m_components[1] = { rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f };
-	temp9001.m_components[2] = { rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f };
-	temp9001.m_components[3] = { rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f };
-	temp9001.m_components[4] = { rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f };
-	temp9001.m_components[5] = { rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f, rand() % 3 + 1.f };
-
-	std::cout << "\n proof for inverse working:\n";
-	temp9001 = temp9001 * temp9001.Inverse();
-	temp9001.Print();
-	std::cout << '\n';
 }
 
 void Game::GamepadInput(int mainplayer)
@@ -335,25 +288,6 @@ void Game::KeyboardDown(int mainplayer)
 		Deccel = true;
 		printf("Settings Reset:\nBounce = off\nSpeed Cap = on\nDecceleration = on\n");
 	}
-
-	/*if (Input::GetKeyDown(Key::Z)) {
-		m_register->get<AnimationController>(EntityIdentifier::Button(2)).SetActiveAnim(0);
-	}
-	if (Input::GetKeyDown(Key::X)) {
-		m_register->get<AnimationController>(EntityIdentifier::Button(2)).SetActiveAnim(1);
-	}
-	if (Input::GetKeyDown(Key::C)) {
-		m_register->get<AnimationController>(EntityIdentifier::Button(2)).SetActiveAnim(2);
-	}
-	if (Input::GetKeyDown(Key::V)) {
-		m_register->get<AnimationController>(EntityIdentifier::Button(2)).SetActiveAnim(3);
-	}
-	if (Input::GetKeyDown(Key::B)) {
-		m_register->get<AnimationController>(EntityIdentifier::Button(2)).SetActiveAnim(4);
-	}
-	if (Input::GetKeyDown(Key::N)) {
-		m_register->get<AnimationController>(EntityIdentifier::Button(2)).SetActiveAnim(5);
-	}*/
 }
 
 void Game::KeyboardUp(int mainplayer)
