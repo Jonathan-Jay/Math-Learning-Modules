@@ -37,8 +37,6 @@ Game::~Game()
 
 void Game::InitGame()
 {
-	glCullFace(GL_NONE);
-
 	m_name = "Assignment";
 	m_clearColor = vec4(1.f, 0.5f, 0.5f, 0.f);
 
@@ -53,8 +51,9 @@ void Game::InitGame()
 	m_activeScene->InitScene(float(BackEnd::GetWindowWidth()), float(BackEnd::GetWindowHeight()));
 	//*m_activeScene = File::LoadJSON("Scene Name.json");			//if I want to load a JSON
 
-
 	m_register = m_activeScene->GetScene();
+
+	PhysicsSystem::Init();
 
 	EntityManager::InitManager(m_register);
 }
@@ -99,6 +98,8 @@ void Game::Update()
 	Timer::Update();
 	//Update the backend
 	BackEnd::Update(m_register);
+
+	PhysicsSystem::Update(m_register);
 }
 
 void Game::GUI()
@@ -307,6 +308,10 @@ void Game::KeyboardUp(int mainplayer)
 		}
 		Launch = 25;
 	}
+
+	if (Input::GetKeyUp(Key::P)) {
+		PhysicsBody::SetDraw(!PhysicsBody::GetDraw());
+	}
 }
 
 void Game::MovementKey(int mainplayer, int tracker)
@@ -333,6 +338,11 @@ void Game::Movement(int mainplayer, int object, int tracker)
 	vec3(ObjectPos) = m_register->get<Transform>(object).GetPosition();	
 	vec3(TrackerPos) = m_register->get<Transform>(tracker).GetPosition();
 	auto& CurrentAnim = m_register->get<AnimationController>(mainplayer).GetAnimation(m_register->get<AnimationController>(mainplayer).GetActiveAnim());
+
+	/*
+	vec3 tempvec(m_register->get<PhysicsBody>(mainplayer).GetVelocity());
+	movement = vec2(tempvec.x, tempvec.y);
+	*/
 
 	if (movement.GetMagnitude() != 0) {
 		CurrentAnim.SetRepeating(false);
@@ -426,6 +436,8 @@ void Game::Movement(int mainplayer, int object, int tracker)
 	if (ObjectPos.y < -200)	ObjectPos.y = -200;
 
 	m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition);
+	//m_register->get<PhysicsBody>(mainplayer).ApplyForce(vec3(Force.x, Force.y, 0.f));
+
 	m_register->get<Transform>(object).SetPosition(ObjectPos);
 	m_register->get<Transform>(tracker).SetPosition(TrackerPos);
 	vec2(temp) = vec2(0.f, 25.f).Rotate(angle);

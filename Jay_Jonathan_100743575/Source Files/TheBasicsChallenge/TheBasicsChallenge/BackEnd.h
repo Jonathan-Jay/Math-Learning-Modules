@@ -11,6 +11,7 @@
 #include "AnimationSystem.h"
 #include "Assignment.h"
 #include "EntityManager.h"
+#include "PhysicsSystem.h"
 
 //Mouse Motion event
 typedef SDL_MouseMotionEvent MotionEvent;
