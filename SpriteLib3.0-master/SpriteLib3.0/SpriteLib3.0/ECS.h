@@ -50,7 +50,6 @@ private:
 	static entt::registry* m_reg;
 };
 
-
 template<typename T>
 inline void ECS::AttachComponent(unsigned entity)
 {
