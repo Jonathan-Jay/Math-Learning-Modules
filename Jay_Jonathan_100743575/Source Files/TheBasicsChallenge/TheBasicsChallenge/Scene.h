@@ -3,7 +3,7 @@
 
 #include "JSON.h"
 #include "ECS.h"
-
+#include "PhysicsBody.h"
 
 class Scene
 {
@@ -95,6 +95,11 @@ inline void to_json(nlohmann::json& j, const Scene& scene)
 		if (identity & EntityIdentifier::ScrollCameraBit())
 		{
 			j[std::to_string(counter)]["ScrollCam"] = scene.GetScene()->get<Scroll>(entity);
+		}
+
+		if (identity & EntityIdentifier::PhysicsBit())
+		{
+			j[std::to_string(counter)]["PhysicsBody"] = scene.GetScene()->get<PhysicsBody>(entity);
 		}
 
 		//For each loop increase the counter
@@ -229,6 +234,12 @@ inline void from_json(const nlohmann::json& j, Scene& scene)
 			scroll = true;
 		}
 
+		if (identity * EntityIdentifier::PhysicsBit())
+		{
+			reg.assign<PhysicsBody>(entity);
+
+			reg.get<PhysicsBody>(entity) = j["Scene"][std::to_string(i)]["PhysicsBody"];
+		}
 	}
 
 	if (scroll) {
