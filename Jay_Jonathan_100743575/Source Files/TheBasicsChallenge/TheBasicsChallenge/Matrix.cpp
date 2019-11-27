@@ -180,12 +180,12 @@ float mat3::Determinant()
 mat3 mat3::Inverse()
 {
 	//the inverse is equal to
-	//		   -1             T
+	//		   -1
 	//[ A B C ]   =  adj(mat3)
 	//[ D E F ]   = -----------
 	//[ G H I ]   =  det(amt3)
-	float Det = Determinant();
 	mat3(Cofactor) = CofactorMatrix();
+	float Det = Determinant();
 
 	return Transpose(Cofactor) / Det;
 }
