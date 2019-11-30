@@ -3,6 +3,8 @@
 Assignment::Assignment(std::string name)
 	: Scene(name)
 {
+	m_gravity = b2Vec2(float32(0.f), float32(-20.f));
+	m_physicsWorld->SetGravity(m_gravity);
 }
 
 void Assignment::InitScene(float windowWidth, float windowHeight)
@@ -39,7 +41,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		ECS::AttachComponent<Transform>(entity);
 
 		std::string filename = "Background.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 670, 670);
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 1200, 670);
 
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, -10.f));
 
@@ -54,12 +56,118 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		ECS::AttachComponent<Transform>(entity);
 
 		std::string filename = "FrontFence.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 670, 670);
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 1200, 670);
 
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 20.f));
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Front Fence");
+	}
+
+	{
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(0.f), float32(-285.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(tempBody, 1000, 50, vec2(0.f, -25.f), false);
+
+		unsigned int bitHolder = EntityIdentifier::PhysicsBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "Floor");
+	}
+
+	{
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(0.f), float32(285.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(tempBody, 1100, 50, vec2(0.f, 25.f), false);
+
+		unsigned int bitHolder = EntityIdentifier::PhysicsBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "Roof");
+	}
+
+	{
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(550.f), float32(0.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(tempBody, 50, 670, vec2(25.f, 0.f), false);
+
+		unsigned int bitHolder = EntityIdentifier::PhysicsBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "Wall right");
+	}
+
+	{
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_staticBody;
+		tempDef.position.Set(float32(-550.f), float32(0.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(tempBody, 50, 670, vec2(-25.f, 0.f), false);
+
+		unsigned int bitHolder = EntityIdentifier::PhysicsBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "Wall left");
+	}
+
+	{
+		auto entity = ECS::CreateEntity();
+
+		ECS::AttachComponent<Transform>(entity);
+		ECS::AttachComponent<Sprite>(entity);
+		ECS::AttachComponent<PhysicsBody>(entity);
+
+		std::string filename = "STOP.png";
+		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 210, 30);
+
+		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
+
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_dynamicBody;
+		tempDef.position.Set(float32(110.f), float32(-250.f));
+
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(tempBody, 210, 30, vec2(0.f, 0.f), true);
+
+		unsigned int bitHolder = EntityIdentifier::TransformBit() | EntityIdentifier::SpriteBit() | EntityIdentifier::PhysicsBit();
+		ECS::SetUpIdentifier(entity, bitHolder, "Pyramid base");
+		EntityStorage::StoreEntity(entity, 0);
 	}
 
 	{
@@ -79,7 +187,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		animController.AddAnimation(bunanim["bunLeft"]);
 		animController.AddAnimation(bunanim["bunRight"]);
 
-		animController.SetActiveAnim(0);
+		animController.SetActiveAnim(1);
 
 		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 59, 54, true, &animController);
 
@@ -88,62 +196,24 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
 		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
 
-		tempPhsBody = PhysicsBody(float(tempSpr.GetWidth() / 2.f),
-						vec2(0.f, 0.f), CollisionIDs::Player(),
-						(CollisionIDs::Enemy() | CollisionIDs::Environment()), true);
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_dynamicBody;
+		tempDef.position.Set(float32(-50.f), float32(-200.f));
 
-		tempPhsBody.SetFriction(10.f);
-		tempPhsBody.SetMaxVelo(250.f);
-		tempPhsBody.SetGravity(false);
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
+
+		tempPhsBody = PhysicsBody(tempBody, float(tempSpr.GetHeight() / 2.f), vec2(0.f, 0.f), true);
+
+		tempPhsBody.SetMaxVelo(1000.f);
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit()
 			| EntityIdentifier::AnimationBit() | EntityIdentifier::PhysicsBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "bun");
 		ECS::SetIsMainPlayer(entity, true);
-		ECS::SetIsButton(entity, true, 1);
 	}
 
-	{
-		auto entity = ECS::CreateEntity();
-
-		ECS::AttachComponent<Sprite>(entity);
-		ECS::AttachComponent<Transform>(entity);
-		ECS::AttachComponent<PhysicsBody>(entity);
-
-		std::string filename = "STOP.png";
-		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 20, 20);
-
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 100.f, 10.f));
-
-		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
-		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
-
-		tempPhsBody = PhysicsBody(float(tempSpr.GetWidth() / 2.f),
-			vec2(0.f, 0.f), CollisionIDs::Enemy(), CollisionIDs::Player(), true);
-
-		tempPhsBody.SetFriction(0.15f);
-		tempPhsBody.SetMaxVelo(250.f);
-		tempPhsBody.SetGravity(false);
-
-		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit()
-			| EntityIdentifier::PhysicsBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "Object");
-		ECS::SetIsObject(entity, true);
-		ECS::SetIsButton(entity, true, 0);
-	}
-	
-	{
-		auto entity = ECS::CreateEntity();
-
-		ECS::AttachComponent<Transform>(entity);
-
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 0.f));
-
-		unsigned int bitHolder = EntityIdentifier::TransformBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "Tracker");
-		ECS::SetIsTracker(entity, true);
-	}
-
+	for (int x(1); x <= 21; x++)
 	{
 		auto Fairy = File::LoadJSON("Fairy.json");
 
@@ -165,136 +235,44 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		animController.AddAnimation(Fairy["fairy3left"]);
 		animController.AddAnimation(Fairy["fairy3right"]);
 
-		animController.SetActiveAnim(0);
+		animController.SetActiveAnim(rand() % 6);
 
 		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 28, 27, true, &animController);
 
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, -50.f, 5.f));
+		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 5.f));
 
 		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
 		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
 
-		tempPhsBody = PhysicsBody(float(tempSpr.GetWidth()), float(tempSpr.GetHeight()),
-			vec2(0.f, 0.f), CollisionIDs::Enemy(),
-			(CollisionIDs::Player() | CollisionIDs::Environment()), true);
+		b2Body* tempBody;
+		b2BodyDef tempDef;
+		tempDef.type = b2_dynamicBody;
+		if (x < 7) {
+			tempDef.position.Set(float32(20.f + 30.f * x), float32(-200.f));
+		}
+		else if (x < 12) {
+			tempDef.position.Set(float32(200.f - 30.f * (x - 7)), float32(-170.f));
+		}
+		else if (x < 16) {
+			tempDef.position.Set(float32(110.f + 30.f * (x - 12)), float32(-140.f));
+		}
+		else if (x < 19) {
+			tempDef.position.Set(float32(200.f - 30.f * (x - 16)), float32(-110.f));
+		}
+		else if (x < 21) {
+			tempDef.position.Set(float32(170.f + 30.f * (x - 19)), float32(-80.f));
+		}
+		else tempDef.position.Set(float32(200.f), float32(-50.f));
 
-		tempPhsBody.SetFriction(0.15f);
-		tempPhsBody.SetMaxVelo(250.f);
-		tempPhsBody.SetGravity(false);
+		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
-		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit()
-			| EntityIdentifier::AnimationBit() | EntityIdentifier::PhysicsBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "fairy1");
-	}
-	{
-		auto Fairy = File::LoadJSON("Fairy.json");
-
-		auto entity = ECS::CreateEntity();
-
-		ECS::AttachComponent<Sprite>(entity);
-		ECS::AttachComponent<Transform>(entity);
-		ECS::AttachComponent<AnimationController>(entity);
-		ECS::AttachComponent<PhysicsBody>(entity);
-
-		std::string filename = "fairy.png";
-		auto& animController = ECS::GetComponent<AnimationController>(entity);
-		animController.InitUVs(filename);
-
-		animController.AddAnimation(Fairy["fairy1left"]);
-		animController.AddAnimation(Fairy["fairy1right"]);
-		animController.AddAnimation(Fairy["fairy2left"]);
-		animController.AddAnimation(Fairy["fairy2right"]);
-		animController.AddAnimation(Fairy["fairy3left"]);
-		animController.AddAnimation(Fairy["fairy3right"]);
-
-		animController.SetActiveAnim(4);
-
-		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 28, 27, true, &animController);
-
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(50.f, 0.f, 5.f));
-
-		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
-		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
-
-		tempPhsBody = PhysicsBody(float(tempSpr.GetWidth()), float(tempSpr.GetHeight()),
-			vec2(0.f, 0.f), CollisionIDs::Enemy(),
-			(CollisionIDs::Player() | CollisionIDs::Environment()), true);
-
-		tempPhsBody.SetFriction(0.15f);
-		tempPhsBody.SetMaxVelo(250.f);
-		tempPhsBody.SetGravity(false);
+		tempPhsBody = PhysicsBody(tempBody, 14.f, vec2(0.f, 0.f), true);
+		tempPhsBody.SetMass(0.f);
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit()
 			| EntityIdentifier::AnimationBit() | EntityIdentifier::PhysicsBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "fairy2");
-	}
-	{
-		auto Fairy = File::LoadJSON("Fairy.json");
-
-		auto entity = ECS::CreateEntity();
-
-		ECS::AttachComponent<Sprite>(entity);
-		ECS::AttachComponent<Transform>(entity);
-		ECS::AttachComponent<AnimationController>(entity);
-		ECS::AttachComponent<PhysicsBody>(entity);
-
-		std::string filename = "fairy.png";
-		auto& animController = ECS::GetComponent<AnimationController>(entity);
-		animController.InitUVs(filename);
-
-		animController.AddAnimation(Fairy["fairy1left"]);
-		animController.AddAnimation(Fairy["fairy1right"]);
-		animController.AddAnimation(Fairy["fairy2left"]);
-		animController.AddAnimation(Fairy["fairy2right"]);
-		animController.AddAnimation(Fairy["fairy3left"]);
-		animController.AddAnimation(Fairy["fairy3right"]);
-
-		animController.SetActiveAnim(5);
-
-		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 28, 27, true, &animController);
-
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(-50.f, 0.f, 5.f));
-
-		auto& tempSpr = ECS::GetComponent<Sprite>(entity);
-		auto& tempPhsBody = ECS::GetComponent<PhysicsBody>(entity);
-
-		tempPhsBody = PhysicsBody(float(tempSpr.GetWidth()), float(tempSpr.GetHeight()),
-			vec2(0.f, 0.f), CollisionIDs::Enemy(),
-			(CollisionIDs::Player() | CollisionIDs::Environment()), true);
-
-		tempPhsBody.SetFriction(0.15f);
-		tempPhsBody.SetMaxVelo(250.f);
-		tempPhsBody.SetGravity(false);
-
-		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit()
-			| EntityIdentifier::AnimationBit() | EntityIdentifier::PhysicsBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "fairy3");
-	}
-
-	{
-		auto controller = File::LoadJSON("Controller.json");
-
-		auto entity = ECS::CreateEntity();
-
-		ECS::AttachComponent<Sprite>(entity);
-		ECS::AttachComponent<Transform>(entity);
-		ECS::AttachComponent<AnimationController>(entity);
-
-		std::string filename = "controller.png";
-		auto& animController = ECS::GetComponent<AnimationController>(entity);
-		animController.InitUVs(filename);
-
-		animController.AddAnimation(controller["controller"]);
-
-		animController.SetActiveAnim(0);
-
-		ECS::GetComponent<Sprite>(entity).LoadSprite(filename, 20, 14, true, &animController);
-
-		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 25.f, 5.f));
-
-		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit() | EntityIdentifier::AnimationBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "controller");
-		ECS::SetIsButton(entity, true, 2);
+		ECS::SetUpIdentifier(entity, bitHolder, "fairy" + std::to_string(x));
+		EntityStorage::StoreEntity(entity, x);
 	}
 
 	ECS::GetComponent<Scroll>(EntityIdentifier::MainCamera()).SetFocus(&ECS::GetComponent<Transform>(EntityIdentifier::MainPlayer()));

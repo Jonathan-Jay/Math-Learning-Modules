@@ -24,9 +24,8 @@ public:
 
 namespace PhysicsSystem
 {
-	void Update(entt::registry* reg);
-
-	void Run(entt::registry* reg);
+	void Update(entt::registry* reg, b2World& world);
+	void Run(b2World& world);
 
 	bool BoxBoxCollision(std::pair<PhysicsBody&, Box> group1, std::pair<PhysicsBody&, Box> group2);
 

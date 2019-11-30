@@ -1,6 +1,6 @@
 #include "PhysicsSystem.h"
 
-void PhysicsSystem::Update(entt::registry* reg)
+void PhysicsSystem::Update(entt::registry* reg, b2World& world)
 {
 	auto view = reg->view<PhysicsBody, Transform>();
 
@@ -8,88 +8,20 @@ void PhysicsSystem::Update(entt::registry* reg)
 		auto& physBod = view.get<PhysicsBody>(entity);
 		auto& trans = view.get<Transform>(entity);
 
-		physBod.Update(&trans, Timer::deltaTime);
-
-		Run(reg);
+		physBod.Update(&trans);
 	}
+
+	Run(world);
 }
 
-void PhysicsSystem::Run(entt::registry* reg)
+void PhysicsSystem::Run(b2World& world)
 {
-	auto view = reg->view<PhysicsBody, Transform>();
+	float32 timeStep = 1.f / 60.f;
 
-	for (auto entity : view) {
-		auto& trans1 = view.get<Transform>(entity);
-		auto& body1 = view.get<PhysicsBody>(entity);
+	int32 velocityIterations = 8;
+	int32 positionIterations = 3;
 
-		Circle worldPosC;
-		Box worldPosB;
-
-		switch (body1.GetBodyType()) {
-		case BodyType::BOX:
-			worldPosB.m_center = trans1.GetPosition() + vec3(body1.GetCenterOffset().x, body1.GetCenterOffset().y, 0.f);
-			worldPosB.m_bottomLeft = trans1.GetPosition() + vec3(body1.GetBottomLeft().x, body1.GetBottomLeft().y, 0.f);
-			worldPosB.m_topRight = trans1.GetPosition() + vec3(body1.GetTopRight().x, body1.GetTopRight().y, 0.f);
-			worldPosB.m_bottomRight = vec3(worldPosB.m_topRight.x, worldPosB.m_bottomLeft.y, 0.f);
-			worldPosB.m_topLeft = vec3(worldPosB.m_bottomLeft.x, worldPosB.m_topRight.y, 0.f);
-			break;
-		case BodyType::CIRCLE:
-			worldPosC.m_center = trans1.GetPosition() + vec3(body1.GetCenterOffset().x, body1.GetCenterOffset().y, 0.f);
-			worldPosC.m_radius = body1.GetRadius();
-		}
-
-		if (body1.GetDynamic()) {
-			for (auto entity2 : view) {
-				auto& trans2 = view.get<Transform>(entity2);
-				auto& body2 = view.get<PhysicsBody>(entity2);
-
-				Circle worldPosC2;
-				Box worldPosB2;
-
-				switch (body2.GetBodyType()) {
-				case BodyType::BOX:
-					worldPosB2.m_center = trans2.GetPosition() + vec3(body2.GetCenterOffset().x, body2.GetCenterOffset().y, 0.f);
-					worldPosB2.m_bottomLeft = trans2.GetPosition() + vec3(body2.GetBottomLeft().x, body2.GetBottomLeft().y, 0.f);
-					worldPosB2.m_topRight = trans2.GetPosition() + vec3(body2.GetTopRight().x, body2.GetTopRight().y, 0.f);
-					worldPosB2.m_bottomRight = vec3(worldPosB2.m_topRight.x, worldPosB2.m_bottomLeft.y, 0.f);
-					worldPosB2.m_topLeft = vec3(worldPosB2.m_bottomLeft.x, worldPosB2.m_topRight.y, 0.f);
-					break;
-				case BodyType::CIRCLE:
-					worldPosC2.m_center = trans2.GetPosition() + vec3(body2.GetCenterOffset().x, body2.GetCenterOffset().y, 0.f);
-					worldPosC2.m_radius = body2.GetRadius();
-					break;
-				}
-
-				if (body1.GetBodyType() == BodyType::CIRCLE) {
-					if (body2.GetBodyType() == BodyType::BOX) {
-						//circle-box
-
-					}
-					else if (body2.GetBodyType() == BodyType::CIRCLE) {
-						//circle-circle
-
-					}
-				}
-				else if (body1.GetBodyType() == BodyType::BOX) {
-					if (body2.GetBodyType() == BodyType::BOX) {
-						//box-box
-						if (BoxBoxCollision(std::pair<PhysicsBody&, Box>(body1, worldPosB), std::pair<PhysicsBody&, Box>(body2, worldPosB2))) {
-							trans1.SetPosition(trans1.GetPosition() + (-body1.GetVelocity() * Timer::deltaTime));
-
-							body1.SetAcceleration(vec3(0.f, 0.f, 0.f));
-							body1.SetVelocity(vec3(0.f, 0.f, 0.f));
-						}
-					}
-					else if (body2.GetBodyType() == BodyType::CIRCLE) {
-						//box-circle
-
-					}
-				}
-
-			}
-		}
-
-	}
+	world.Step(timeStep, velocityIterations, positionIterations);
 }
 
 bool PhysicsSystem::BoxBoxCollision(std::pair<PhysicsBody&, Box> group1, std::pair<PhysicsBody&, Box> group2)

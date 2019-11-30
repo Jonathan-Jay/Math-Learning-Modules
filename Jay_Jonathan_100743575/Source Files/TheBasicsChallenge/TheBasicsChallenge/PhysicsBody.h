@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <Box2D/Box2D.h>
 #include "JSON.h"
 #include "Vector.h"
 #include "VertexManager.h"
@@ -31,14 +32,12 @@ class PhysicsBody
 {
 public:
 	PhysicsBody() { };
-	
-	PhysicsBody(vec2 botLeft, vec2 TopRight, vec2 centerOffset, unsigned int objectSpecifier, unsigned int collidesWith, bool isDynamic = false);
-	PhysicsBody(float width, float height, vec2 centerOffset, unsigned int objectSpecifier, unsigned int collidesWith, bool isDynamic = false);
-	PhysicsBody(float radius, vec2 centerOffset, unsigned int objectSpecifier, unsigned int collidesWith, bool isDynamic = false);
 
-	void Update(Transform* trans, float dt);
+	PhysicsBody(b2Body* body, float radius, vec2 centerOffset, bool isDynamic);
+	PhysicsBody(b2Body* body, float width, float height, vec2 centerOffset, bool isDynamic);
 
 	void ApplyForce(vec3 force);
+	void Update(Transform* trans);
 
 	//getters
 	vec3 GetForce() const;
@@ -67,6 +66,9 @@ public:
 
 	bool GetDynamic() const;
 
+	b2Body* GetBody() const;
+	b2Vec2 GetPosition() const;
+
 	//setters
 	void SetForce(vec3 force);
 	void SetAcceleration(vec3 accel);
@@ -93,6 +95,9 @@ public:
 	void SetCollideID(unsigned int collideID);
 
 	void SetDynamic(bool isDynamic);
+
+	void SetBody(b2Body* body);
+	void SetPosition(b2Vec2 bodyPos);
 
 	//drawing
 	static bool GetDraw();
@@ -135,10 +140,14 @@ private:
 	static bool m_drawbodies;
 	GLuint m_vao = GL_NONE;
 	GLuint m_vboPos = GL_NONE;
+
+	b2Body* m_body = nullptr;
+	b2Vec2 m_position = b2Vec2(0.f, 0.f);
 };
 
 inline void to_json(nlohmann::json& j, const PhysicsBody& phys)
 {
+	j["BodyPosition"] = { phys.GetPosition().x, phys.GetPosition().y };
 	j["BodyType"] = phys.GetBodyType();
 	
 	j["CenterOffset"] = { phys.GetCenterOffset().x, phys.GetCenterOffset().x };
@@ -165,6 +174,7 @@ inline void to_json(nlohmann::json& j, const PhysicsBody& phys)
 
 inline void from_json(const nlohmann::json& j, PhysicsBody& phys)
 {
+	phys.SetPosition(b2Vec2(j["BodyPosition"][0], j["BodyPosition"][1]));
 	phys.SetBodyType(j["BodyType"]);
 
 	phys.SetCenterOffset(vec2(j["CenterOffset"][0], j["CenterOffset"][1]));

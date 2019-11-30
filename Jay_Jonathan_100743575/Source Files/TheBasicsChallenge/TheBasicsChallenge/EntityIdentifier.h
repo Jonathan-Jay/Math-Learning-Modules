@@ -17,15 +17,6 @@ public:
 	static unsigned int MainCamera();
 	bool GetIsMainCamera() const;
 
-	static unsigned int Object();
-	bool GetIsObject() const;
-	
-	static unsigned int Tracker();
-	bool GetIsTracker() const;
-
-	static unsigned int Button(int choice);
-	bool GetIsButton(int choice) const;
-
 	//Get entity number
 	unsigned int GetEntity() const;
 	//Get identifier bitfield
@@ -51,15 +42,6 @@ public:
 	static void MainCamera(unsigned int entity);
 	void SetIsMainCamera(bool main);
 
-	static void Object(unsigned int entity);
-	void SetIsObject(bool main);
-
-	static void Tracker(unsigned int entity);
-	void SetIsTracker(bool main);
-
-	static void Button(unsigned int entity, int choice);
-	void SetIsButton(bool main, int choice);
-
 	//Set entity number
 	void SetEntity(unsigned int entity);
 	//Set identifier bitfield
@@ -76,15 +58,6 @@ private:
 	//Main camera
 	static unsigned int m_mainCamera;
 	bool m_isMainCamera = false;
-
-	static unsigned int m_object;
-	bool m_isObject = false;
-
-	static unsigned int m_tracker;
-	bool m_isTracker = false;
-
-	static unsigned int m_button[3];
-	bool m_isButton[3] = {};
 
 	//Stores the entity number
 	unsigned int m_entity;
@@ -121,16 +94,6 @@ inline void to_json(nlohmann::json& j, const EntityIdentifier& id)
 
 	//Stores whether or not this is the main player
 	j["MainPlayer"] = id.GetIsMainPlayer();
-	
-	//Stores whether or not this is the object
-	j["Object"] = id.GetIsObject();
-
-	//Stores whether or not this is the tracker
-	j["Tracker"] = id.GetIsTracker();
-
-	for (int x(0); x < 3; x++) {
-		j["Button" + std::to_string(x)] = id.GetIsButton(x);
-	}
 
 	//Stores the name of this entity
 	j["Name"] = id.GetName();
@@ -147,16 +110,6 @@ inline void from_json(const nlohmann::json& j, EntityIdentifier& id)
 
 	//Grabs whether or not this is the main player
 	id.SetIsMainPlayer(j["MainPlayer"]);
-	
-	//Grabs whether or not this is the object
-	id.SetIsObject(j["Object"]);
-
-	//Grabs whether or not this is the tracker
-	id.SetIsTracker(j["Tracker"]);
-
-	for (int x(0); x < 3; x++) {
-		id.SetIsButton(j["Button" + std::to_string(x)], x);
-	}
 
 	//Grabs the name of this entity
 	id.SetName(j["Name"]);

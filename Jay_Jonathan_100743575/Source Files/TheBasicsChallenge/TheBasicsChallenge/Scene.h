@@ -30,8 +30,17 @@ public:
 	
 	//Set window size (makes sure the camera aspect is proper)
 	void SetWindowSize(float windowWidth, float windowHeight);
+
+	b2Vec2 GetGravity() const;
+	void SetGravity(b2Vec2 grav);
+
+	b2World& GetPhysicsWorld();
+
 protected:
-	entt::registry* m_sceneReg = nullptr;	
+	b2World* m_physicsWorld = nullptr;
+	b2Vec2 m_gravity = b2Vec2(float32(0.f), float32(0.f));
+
+	entt::registry* m_sceneReg = nullptr;
 	std::string m_name = "Default Name";
 };
 
@@ -149,21 +158,6 @@ inline void from_json(const nlohmann::json& j, Scene& scene)
 			EntityIdentifier::MainPlayer(entity);
 		}
 
-		if (reg.get<EntityIdentifier>(entity).GetIsObject())
-		{
-			EntityIdentifier::Object(entity);
-		}
-		if (reg.get<EntityIdentifier>(entity).GetIsTracker())
-		{
-			EntityIdentifier::Tracker(entity);
-		}
-		for (int x(0); x < 3; x++) {
-			if (reg.get<EntityIdentifier>(entity).GetIsButton(x))
-			{
-				EntityIdentifier::Button(entity, x);
-			}
-		}
-
 		unsigned int identity = reg.get<EntityIdentifier>(entity).GetIdentifier();
 
 		//If Identity includes the Camera bit
@@ -234,7 +228,7 @@ inline void from_json(const nlohmann::json& j, Scene& scene)
 			scroll = true;
 		}
 
-		if (identity * EntityIdentifier::PhysicsBit())
+		if (identity & EntityIdentifier::PhysicsBit())
 		{
 			reg.assign<PhysicsBody>(entity);
 

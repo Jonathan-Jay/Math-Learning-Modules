@@ -155,8 +155,6 @@ void BackEnd::Update(entt::registry* mainReg)
 	RenderingSystem::Update(mainReg);
 	//Animation update system
 	AnimationSystem::Update(Timer::deltaTime, mainReg);
-
-	PhysicsSystem::Update(mainReg);
 }
 
 void BackEnd::GUI(entt::registry* reg, Scene* scene)

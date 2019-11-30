@@ -1,17 +1,8 @@
 #include "Game.h"
 #include <random>
 
-float Width(59);
-float Height(54);
-float Launch(25);
-bool controller = false;
-bool Bounce = false;
-bool SpeedCap = true;
-bool Deccel = true;
-vec2 Force = vec2(0.f, 0.f);
-vec2 movement = vec2(0.f, 0.f);
-vec2 objectMov = vec2(0.f, 0.f);
-float weight = 1.f;
+std::vector<b2RopeJoint*> joint;
+bool destroyJoint = true;
 
 Game::~Game()
 {
@@ -55,7 +46,20 @@ void Game::InitGame()
 
 	PhysicsSystem::Init();
 
+	joint.resize(21);
+	
 	EntityManager::InitManager(m_register);
+	for (int x(1); x < 21; x++) {
+		b2RopeJointDef jointDef;
+		b2Body* body1 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody();
+		b2Body* body2 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+		jointDef.bodyA = body1;
+		jointDef.bodyB = body2;
+		jointDef.collideConnected = true;
+		jointDef.maxLength = 0.f;
+
+		joint[x - 1] = (b2RopeJoint*)m_activeScene->GetPhysicsWorld().CreateJoint(&jointDef);
+	}
 }
 
 bool Game::Run()
@@ -99,7 +103,7 @@ void Game::Update()
 	//Update the backend
 	BackEnd::Update(m_register);
 
-	PhysicsSystem::Update(m_register);
+	PhysicsSystem::Update(m_register, m_activeScene->GetPhysicsWorld());
 }
 
 void Game::GUI()
@@ -136,25 +140,19 @@ void Game::CheckEvents()
 void Game::AcceptInput()
 {
 	XInputManager::Update();
-	int mainplayer = EntityIdentifier::MainPlayer();
-	int object = EntityIdentifier::Object();
-	int tracker = EntityIdentifier::Tracker();
-	controller = false;
 
 	//Just calls all the other input functions 
-	GamepadInput(mainplayer);
-	KeyboardHold(mainplayer);
-	KeyboardDown(mainplayer);
-	KeyboardUp(mainplayer);
-	if (!controller) MovementKey(mainplayer, tracker);
+	GamepadInput();
+	KeyboardHold();
+	KeyboardDown();
+	KeyboardUp();
 
 	//Resets the key flags
 	//Must be done once per frame for input to work
 	Input::ResetKeys();
-	Game::Movement(mainplayer, object, tracker);
 }
 
-void Game::GamepadInput(int mainplayer)
+void Game::GamepadInput()
 {
 	XInputController* tempCon;
 	for (int i = 0; i < 3; i++)
@@ -164,134 +162,154 @@ void Game::GamepadInput(int mainplayer)
 			tempCon = XInputManager::GetController(i);
 			tempCon->SetStickDeadZone(0.1f);
 
-			GamepadStroke(tempCon, mainplayer);
-			GamepadUp(tempCon, mainplayer);
-			GamepadDown(tempCon, mainplayer);
-			GamepadStick(tempCon, mainplayer);
-			GamepadTrigger(tempCon, mainplayer);
+			GamepadStroke(tempCon);
+			GamepadUp(tempCon);
+			GamepadDown(tempCon);
+			GamepadStick(tempCon);
+			GamepadTrigger(tempCon);
 		}
 	}
 }
 
-void Game::GamepadStroke(XInputController* con, int mainplayer)
+void Game::GamepadStroke(XInputController* con)
 {
 
 }
 
-void Game::GamepadUp(XInputController* con, int mainplayer)
+void Game::GamepadUp(XInputController* con)
 {
 
 }
 
-void Game::GamepadDown(XInputController* con, int mainplayer)
+void Game::GamepadDown(XInputController* con)
 {
-	if (con->IsButtonPressed(Buttons::A))
-	{
-		if (m_register->get<AnimationController>(mainplayer).GetActiveAnim() == 0)
-			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
-		else m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
-	}
+
 }
 
-void Game::GamepadStick(XInputController* con, int mainplayer)
+void Game::GamepadStick(XInputController* con)
 {
 	Stick sticks[2];
 	con->GetSticks(sticks);
-
-	if (sticks[0].x > 0.1f)		{ Force.x += sticks[0].x * 200.f; controller = true; }
-	if (sticks[0].x < -0.1f)	{ Force.x += sticks[0].x * 200.f; controller = true; }
-	if (sticks[0].y > 0.1f)		{ Force.y += sticks[0].y * 200.f; controller = true; }
-	if (sticks[0].y < -0.1f)	{ Force.y += sticks[0].y * 200.f; controller = true; }
 }
 
-void Game::GamepadTrigger(XInputController* con, int mainplayer)
+void Game::GamepadTrigger(XInputController* con)
 {
 	Triggers triggers;
 	con->GetTriggers(triggers);
-
-	if (triggers.RT > 0.8f)
-	{
-		m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
-	}
-
-	if (triggers.LT > 0.8f)
-	{
-		m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
-	}
 }
 
-void Game::KeyboardHold(int mainplayer)
+void Game::KeyboardHold()
 {
 	//Keyboard button held
-	if (Input::GetKey(Key::Space) && Width > 0.01 && Height > 0.01) {
-		Width *= 0.99f;
-		Height *= 0.99f;
-		weight *= 0.997f;
+	if (Input::GetKey(Key::D)) {
+		m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).ApplyForce(vec3(10000.f, 0.f, 0.f));
 	}
-	else if (Height < 54 || Width < 59) {
-		Width *= 1.1f;
-		Height *= 1.1f;
-		if (weight < 1)	weight *= 1.1f;
+	if (Input::GetKey(Key::A)) {
+		m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).ApplyForce(vec3(-10000.f, 0.f, 0.f));
 	}
-	if (Height > 54 || Width > 59) {
-		Height = 54;
-		Width = 59;
-		weight = 1;
+	if (Input::GetKey(Key::S)) {
+		m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).ApplyForce(vec3(0.f, -100000.f, 0.f));
 	}
-	m_register->get<Sprite>(mainplayer).SetHeight(Height);
-	m_register->get<Sprite>(mainplayer).SetWidth(Width);
-
-	if (Input::GetKey(Key::Space) && Launch < 100) {
-		Launch++;
+	if (Input::GetKey(Key::W)) {
+		m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).ApplyForce(vec3(0.f, 100000.f, 0.f));
 	}
 
+	if (Input::GetKey(Key::Z)) {
+		m_register->get<Camera>(EntityIdentifier::MainCamera()).Zoom(0.5f);
+	}
+	if (Input::GetKey(Key::X)) {
+		m_register->get<Camera>(EntityIdentifier::MainCamera()).Zoom(-0.5f);
+	}
+
+	if (Input::GetKey(Key::Q)) {
+		for (int x(1); x <= 21; x++) {
+			m_register->get<AnimationController>(EntityStorage::GetEntity(x)).SetActiveAnim(rand() % 6);
+		}
+	}
 }
 
-void Game::KeyboardDown(int mainplayer)
+void Game::KeyboardDown()
 {
 	//Keyboard button down
-	if (Input::GetKeyDown(Key::One)) {
-		if (Bounce) {
-			Bounce = false;
-			printf("Bounce off\n");
-		}
-		else {
-			Bounce = true;
-			printf("Bounce on\n");
-		}
+	if (Input::GetKeyDown(Key::P)) {
+		PhysicsBody::SetDraw(!PhysicsBody::GetDraw());
 	}
-	
-	if (Input::GetKeyDown(Key::Two)) {
-		if (SpeedCap) {
-			SpeedCap = false;
-			printf("Speed Cap off\n");
+
+	if (Input::GetKeyDown(Key::F)) {
+		if (joint[20] == NULL) {
+			b2RopeJointDef jointDef;
+			b2Body* body1 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(1)).GetBody();
+			b2Body* body2 = m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).GetBody();
+			jointDef.bodyA = body1;
+			jointDef.bodyB = body2;
+			jointDef.collideConnected = true;
+			jointDef.maxLength = 40.f;
+
+			joint[20] = (b2RopeJoint*)m_activeScene->GetPhysicsWorld().CreateJoint(&jointDef);
 		}
 		else {
-			SpeedCap = true;
-			printf("Speed Cap on\n");
+			m_activeScene->GetPhysicsWorld().DestroyJoint(joint[20]);
+			joint[20] = NULL;
 		}
 	}
 
-	if (Input::GetKeyDown(Key::Three)) {
-		if (Deccel) {
-			Deccel = false;
-			printf("Decceleration off\n");
+	if (Input::GetKeyDown(Key::Space)) {
+		if (destroyJoint) {
+			for (int x(0); x < 20; x++) {
+				m_activeScene->GetPhysicsWorld().DestroyJoint(joint[x]);
+				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).ApplyForce(
+					vec3((rand() % 3 - 1 ) * 1000000.f * (rand() % 11), 10000000.f, 0.f));
+				joint[x] = NULL;
+			}
+			m_register->get<PhysicsBody>(EntityStorage::GetEntity(21)).ApplyForce(
+				vec3((rand() % 3 - 1) * 1000000.f * (rand() % 11), 10000000.f, 0.f));
+			m_register->get<PhysicsBody>(EntityStorage::GetEntity(0)).ApplyForce(
+				vec3((rand() % 3 - 1) * 1000000.f * (rand() % 11), 10000000.f, 0.f));
+			destroyJoint = false;
 		}
 		else {
-			Deccel = true;
-			printf("Decceleration on\n");
+			for (int x(1); x < 21; x++) {
+				b2RopeJointDef jointDef;
+				jointDef.bodyA = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody();
+				jointDef.bodyB = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+				jointDef.collideConnected = true;
+				jointDef.maxLength = 0.f;
+
+				joint[x - 1] = (b2RopeJoint*)m_activeScene->GetPhysicsWorld().CreateJoint(&jointDef);
+			}
+			destroyJoint = true;
 		}
 	}
 
-	if (Input::GetKeyDown(Key::Four)) {
-		Bounce = false;
-		SpeedCap = true;
-		Deccel = true;
-		printf("Settings Reset:\nBounce = off\nSpeed Cap = on\nDecceleration = on\n");
+	if (Input::GetKeyDown(Key::R)) {
+		for (int x(1); x < 21; x++) {
+			if (x < 7) {
+				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
+					float32(20.f + 30.f * x), float32(-200.f)), float32(0.f));
+			}
+			else if (x < 12) {
+				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
+					float32(200.f - 30.f * (x - 7)), float32(-170.f)), float32(0.f));
+			}
+			else if (x < 16) {
+				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
+					float32(110.f + 30.f * (x - 12)), float32(-140.f)), float32(0.f));
+			}
+			else if (x < 19) {
+				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
+					float32(200.f - 30.f * (x - 16)), float32(-110.f)), float32(0.f));
+			}
+			else if (x < 21) {
+				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
+					float32(170.f + 30.f * (x - 19)), float32(-80.f)), float32(0.f));
+			}
+		}
+		m_register->get<PhysicsBody>(EntityStorage::GetEntity(21)).GetBody()->SetTransform(b2Vec2(float32(200.f), float32(-50.f)), float32(0.f));
+		m_register->get<PhysicsBody>(EntityStorage::GetEntity(0)).GetBody()->SetTransform(b2Vec2(float32(110.f), float32(-250.f)), float32(0.f));
 	}
 }
 
-void Game::KeyboardUp(int mainplayer)
+void Game::KeyboardUp()
 {
 	if (Input::GetKeyUp(Key::Home))
 	{
@@ -302,150 +320,6 @@ void Game::KeyboardUp(int mainplayer)
 		m_guiActive = !m_guiActive;
 	}
 
-	if (Input::GetKeyUp(Key::Space)) {
-		if (movement.GetMagnitude() > 0) {
-			movement = movement + movement.Normalize() * Launch * 10;
-		}
-		Launch = 25;
-	}
-
-	if (Input::GetKeyUp(Key::P)) {
-		PhysicsBody::SetDraw(!PhysicsBody::GetDraw());
-	}
-}
-
-void Game::MovementKey(int mainplayer, int tracker)
-{
-	if (Input::GetKey(Key::W) || Input::GetKey(Key::UpArrow))		Force.y += 200.f;
-	if (Input::GetKey(Key::A) || Input::GetKey(Key::LeftArrow))		Force.x -= 200.f;
-	if (Input::GetKey(Key::S) || Input::GetKey(Key::DownArrow))		Force.y -= 200.f;
-	if (Input::GetKey(Key::D) || Input::GetKey(Key::RightArrow))	Force.x += 200.f;
-
-	if (Input::GetKey(Key::I))	objectMov.y += 100.f;
-	if (Input::GetKey(Key::J))	objectMov.x -= 100.f;
-	if (Input::GetKey(Key::K))	objectMov.y -= 100.f;
-	if (Input::GetKey(Key::L))	objectMov.x += 100.f;
-}
-
-void Game::Movement(int mainplayer, int object, int tracker)
-{
-	int camera = EntityIdentifier::MainCamera();
-	int controller = EntityIdentifier::Button(2);
-
-	Radians angle = m_register->get<Camera>(camera).GetRotationAngleZ();
-
-	vec3(CurrentPosition) = m_register->get<Transform>(mainplayer).GetPosition();
-	vec3(ObjectPos) = m_register->get<Transform>(object).GetPosition();	
-	vec3(TrackerPos) = m_register->get<Transform>(tracker).GetPosition();
-	auto& CurrentAnim = m_register->get<AnimationController>(mainplayer).GetAnimation(m_register->get<AnimationController>(mainplayer).GetActiveAnim());
-
-	/*
-	vec3 tempvec(m_register->get<PhysicsBody>(mainplayer).GetVelocity());
-	movement = vec2(tempvec.x, tempvec.y);
-	*/
-
-	if (movement.GetMagnitude() != 0) {
-		CurrentAnim.SetRepeating(false);
-		if (CurrentAnim.GetAnimationDone() == true) {
-			CurrentAnim.SetSecPerFrame(27.f / (movement.GetMagnitude() + 300.f));
-		}
-
- 		if (Deccel)	movement = movement * 0.995f;
-
- 		if (movement.x > 0.1f) {
-			m_register->get<AnimationController>(mainplayer).SetActiveAnim(1);
-			m_register->get<Transform>(mainplayer).SetRotationAngleZ(PI / 2 - movement.GetAngle(vec2(0.f, 1.f)) );
-		}
-		else if (movement.x < 0.1f) {
-			m_register->get<AnimationController>(mainplayer).SetActiveAnim(0);
-			m_register->get<Transform>(mainplayer).SetRotationAngleZ(-(PI / 2 - movement.GetAngle(vec2(0.f, 1.f)) ) );
-		}
-		if (movement.GetMagnitude() < 0.5f) movement = vec2(0.f, 0.f);
-	}
-	else {
-		if (CurrentAnim.GetSecPerFrame() != 0.09f) {
-			CurrentAnim.SetSecPerFrame(0.09f);
-		}
-		CurrentAnim.SetRepeating(true);
-	}
-
-	vec2(Acceleration) = (Force / weight).Rotate(angle);
-	movement = movement + Acceleration * Timer::deltaTime;
-
-	if (Bounce) {
-		if (CurrentPosition.y <= -250)	movement.y = -movement.y;
-		if (CurrentPosition.y >= 250)	movement.y = -movement.y;
-		if (CurrentPosition.x <= -250)	movement.x = -movement.x;
-		if (CurrentPosition.x >= 250)	movement.x = -movement.x;
-	}
-	else {
-		if (CurrentPosition.y <= -250)	movement.y *= 0.95;
-		if (CurrentPosition.y >= 250)	movement.y *= 0.95;
-		if (CurrentPosition.x <= -250)	movement.x *= 0.95;
-		if (CurrentPosition.x >= 250)	movement.x *= 0.95;
-	}
-	if (SpeedCap) {
-		if (movement.x > 500.f) movement.x = 500.f;
-		else if (movement.x < -500.f) movement.x = -500.f;
-		if (movement.y > 500.f) movement.y = 500.f;
-		else if (movement.y < -500.f) movement.y = -500.f;
-	}
-
-	//getting some vectors
-	vec2(Pos1) = vec2(CurrentPosition.x, CurrentPosition.y);
-	vec2(Pos2) = vec2(ObjectPos.x, ObjectPos.y);
-	vec2(Pos3) = vec2(TrackerPos.x, TrackerPos.y);
-	vec2(tracking) = Pos3 - Pos2;
-	vec2(result) = Pos1 - Pos2;
-
-	//Tracker Movement
-	if (TrackerPos.x <= -100.f && TrackerPos.y >= -100.f)		TrackerPos.y -= 45.f * Timer::deltaTime;
-	else if (TrackerPos.x <= 100.f && TrackerPos.y <= -100.f)	TrackerPos.x += 45.f * Timer::deltaTime;
-	else if (TrackerPos.x >= 100.f && TrackerPos.y <= 100.f)	TrackerPos.y += 45.f * Timer::deltaTime;
-	else if (TrackerPos.x >= -100.f && TrackerPos.y >= 100.f)	TrackerPos.x -= 45.f * Timer::deltaTime;
-	else TrackerPos.y += 45.f * Timer::deltaTime;
-
-	//Object Movement
-	if (tracking.GetMagnitude() > 1.f) {
-		tracking = tracking.Normalize() * 40.f;
-		ObjectPos = ObjectPos + vec3(tracking.x + objectMov.x, tracking.y + objectMov.y, 0.f) * Timer::deltaTime;
-
-		if (tracking.x > 0)	m_register->get<Transform>(object).SetRotationAngleZ(PI - tracking.GetAngle(vec2(0.f, 1.f)));
-		else				m_register->get<Transform>(object).SetRotationAngleZ(PI + tracking.GetAngle(vec2(0.f, 1.f)));
-	}
-
-	//Object Collision (Circular)
-	if (result.GetMagnitude() < m_register->get<Sprite>(object).GetWidth() / 2 + 20.f) {
-		result = result.Normalize();
-		if (Bounce)	movement = result * movement.GetMagnitude();
-		else	CurrentPosition = CurrentPosition + vec3(result.x, result.y, 0.f);
-
-		ObjectPos = ObjectPos + vec3(-result.x / 2.f, -result.y / 2.f, 0.f);
-	}
-	else	CurrentPosition = CurrentPosition + (vec3(movement.x, movement.y, 0.f) * Timer::deltaTime)
-		+ vec3(Acceleration.x, Acceleration.y, 0.f) * (Timer::deltaTime * Timer::deltaTime) / 2;
-
-	if (CurrentPosition.x > 250)	CurrentPosition.x = 250;
-	if (CurrentPosition.x < -250)	CurrentPosition.x = -250;
-	if (CurrentPosition.y > 250)	CurrentPosition.y = 250;
-	if (CurrentPosition.y < -250)	CurrentPosition.y = -250;
-
-	if (ObjectPos.x > 200)	ObjectPos.x = 200;
-	if (ObjectPos.x < -200)	ObjectPos.x = -200;
-	if (ObjectPos.y > 200)	ObjectPos.y = 200;
-	if (ObjectPos.y < -200)	ObjectPos.y = -200;
-
-	m_register->get<Transform>(mainplayer).SetPosition(CurrentPosition);
-	//m_register->get<PhysicsBody>(mainplayer).ApplyForce(vec3(Force.x, Force.y, 0.f));
-
-	m_register->get<Transform>(object).SetPosition(ObjectPos);
-	m_register->get<Transform>(tracker).SetPosition(TrackerPos);
-	vec2(temp) = vec2(0.f, 25.f).Rotate(angle);
-	m_register->get<Transform>(controller).SetPosition(CurrentPosition + vec3(temp.x, temp.y, 5.f));
-	m_register->get<Transform>(controller).SetRotationAngleZ(angle);
-
-	Force = vec2(0.f, -0.f);
-	objectMov = vec2(0.f, -0.f);
 }
 
 void Game::MouseMotion(SDL_MouseMotionEvent evnt)
@@ -466,30 +340,21 @@ void Game::MouseMotion(SDL_MouseMotionEvent evnt)
 
 void Game::MouseClick(SDL_MouseButtonEvent evnt)
 {
-	int maincamera = EntityIdentifier::MainCamera();
 	float windowWidth = BackEnd::GetWindowWidth();
 	float windowHeight = BackEnd::GetWindowHeight();
 	if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+		int maincamera = EntityIdentifier::MainCamera();
 		vec2(click) = vec2(
 			evnt.x / windowHeight * 200.f - 100.f * windowWidth / windowHeight,
 			-evnt.y / windowHeight * 200.f + 100.f
 			)
 			+ vec2(m_register->get<Camera>(maincamera).GetPositionX(),
 			m_register->get<Camera>(maincamera).GetPositionY());
+		auto & mainplayer = m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer());
 
-		for (int x(0); x < 2; x++) {
-			vec3(buttons) = m_register->get<Transform>(EntityIdentifier::Button(x)).GetPosition();
-			vec2(Pos) = click.Rotate(m_register->get<Camera>(maincamera).GetRotationAngleZ()) - vec2(buttons.x, buttons.y);
-			switch (x) {
-			case 0:
-				if (Pos.GetMagnitude() <= m_register->get<Sprite>(EntityIdentifier::Button(0)).GetWidth() / 2.f)	std::cout << "Will stop you\n";
-				break;
-			case 1:
-				if (Pos.GetMagnitude() <= 20.f)	std::cout << "That's you\n";
-				break;
-			}
-		}
+		vec2(change) = vec2(click.x - mainplayer.GetPosition().x, click.y - mainplayer.GetPosition().y).Normalize();
 
+		mainplayer.ApplyForce(vec3(change.x, change.y, 0.f) * 10000000.f);
 	}
 
 	if (m_guiActive)

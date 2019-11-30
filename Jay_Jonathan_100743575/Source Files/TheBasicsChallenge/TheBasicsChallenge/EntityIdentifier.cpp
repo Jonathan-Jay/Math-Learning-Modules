@@ -2,9 +2,6 @@
 
 unsigned int EntityIdentifier::m_mainCamera = 0;
 unsigned int EntityIdentifier::m_mainPlayer = 0;
-unsigned int EntityIdentifier::m_object = 0;
-unsigned int EntityIdentifier::m_tracker = 0;
-unsigned int EntityIdentifier::m_button[3] = {};
 
 unsigned int EntityIdentifier::m_cameraBit				= 0x1;
 unsigned int EntityIdentifier::m_spriteBit				= 0x10;
@@ -48,36 +45,6 @@ bool EntityIdentifier::GetIsMainCamera() const
 {
 	//Gets if this component IS attached to the main camera
 	return m_isMainCamera;
-}
-
-unsigned int EntityIdentifier::Object()
-{
-	return m_object;
-}
-
-bool EntityIdentifier::GetIsObject() const
-{
-	return m_isObject;
-}
-
-unsigned int EntityIdentifier::Tracker()
-{
-	return m_tracker;
-}
-
-bool EntityIdentifier::GetIsTracker() const
-{
-	return m_isTracker;
-}
-
-unsigned int EntityIdentifier::Button(int choice)
-{
-	return m_button[choice];
-}
-
-bool EntityIdentifier::GetIsButton(int choice) const
-{
-	return m_isButton[choice];
 }
 
 unsigned int EntityIdentifier::GetEntity() const
@@ -167,36 +134,6 @@ void EntityIdentifier::SetIsMainCamera(bool main)
 {
 	//Sets whether or not the entity that has this component, is the main camera
 	m_isMainCamera = main;
-}
-
-void EntityIdentifier::Object(unsigned int entity)
-{
-	m_object = entity;
-}
-
-void EntityIdentifier::SetIsObject(bool main)
-{
-	m_isObject = main;
-}
-
-void EntityIdentifier::Tracker(unsigned int entity)
-{
-	m_tracker = entity;
-}
-
-void EntityIdentifier::SetIsTracker(bool main)
-{
-	m_isTracker = main;
-}
-
-void EntityIdentifier::Button(unsigned int entity, int choice)
-{
-	m_button[choice] = entity;
-}
-
-void EntityIdentifier::SetIsButton(bool main, int choice)
-{
-	m_isButton[choice] = main;
 }
 
 void EntityIdentifier::SetEntity(unsigned int entity)

@@ -63,30 +63,3 @@ void ECS::SetIsMainPlayer(unsigned entity, bool mainPlayer)
 	//Sets whether this entity is the main player
 	id.SetIsMainPlayer(mainPlayer);
 }
-
-void ECS::SetIsObject(unsigned entity, bool Object)
-{
-	auto& id = GetComponent<EntityIdentifier>(entity);
-
-	EntityIdentifier::Object(entity);
-
-	id.SetIsObject(Object);
-}
-
-void ECS::SetIsTracker(unsigned entity, bool Tracker)
-{
-	auto& id = GetComponent<EntityIdentifier>(entity);
-
-	EntityIdentifier::Tracker(entity);
-
-	id.SetIsTracker(Tracker);
-}
-
-void ECS::SetIsButton(unsigned entity, bool Button, int choice)
-{
-	auto& id = GetComponent<EntityIdentifier>(entity);
-
-	EntityIdentifier::Button(entity, choice);
-
-	id.SetIsButton(Button, choice);
-}

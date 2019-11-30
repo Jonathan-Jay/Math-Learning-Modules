@@ -51,19 +51,16 @@ public:
 
 	/*Input Functions*/
 	void AcceptInput();
-	void GamepadInput(int mainplayer);
+	void GamepadInput();
 
-	void GamepadStroke(XInputController* con, int mainplayer);
-	void GamepadUp(XInputController* con, int mainplayer);
-	void GamepadDown(XInputController* con, int mainplayer);
-	void GamepadStick(XInputController* con, int mainplayer);
-	void GamepadTrigger(XInputController* con, int mainplayer);
-	void KeyboardHold(int mainplayer);
-	void KeyboardDown(int mainplayer);
-	void KeyboardUp(int mainplayer);
-
-	void MovementKey(int mainplayer, int object);
-	void Movement(int mainplayer, int object, int tracker);
+	void GamepadStroke(XInputController* con);
+	void GamepadUp(XInputController* con);
+	void GamepadDown(XInputController* con);
+	void GamepadStick(XInputController* con);
+	void GamepadTrigger(XInputController* con);
+	void KeyboardHold();
+	void KeyboardDown();
+	void KeyboardUp();
 
 	//Mouse input
 	void MouseMotion(SDL_MouseMotionEvent evnt);

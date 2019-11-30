@@ -2,6 +2,7 @@
 
 Scene::Scene(std::string name)
 {
+	m_physicsWorld = new b2World(m_gravity);
 	m_name = name;
 }
 
@@ -56,4 +57,19 @@ void Scene::SetWindowSize(float windowWidth, float windowHeight)
 	tempCam.Orthographic(float(windowWidth / windowHeight), tempCam.GetOrthoSize().x, tempCam.GetOrthoSize().y,
 															tempCam.GetOrthoSize().z, tempCam.GetOrthoSize().w,
 															tempCam.GetNear(), tempCam.GetFar());
+}
+
+b2Vec2 Scene::GetGravity() const
+{
+	return m_gravity;
+}
+
+void Scene::SetGravity(b2Vec2 grav)
+{
+	m_gravity = grav;
+}
+
+b2World& Scene::GetPhysicsWorld()
+{
+	return *m_physicsWorld;
 }
