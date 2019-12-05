@@ -144,7 +144,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		ECS::SetUpIdentifier(entity, bitHolder, "Wall left");
 	}
 
-	{
+	/*{
 		auto entity = ECS::CreateEntity();
 
 		ECS::AttachComponent<Transform>(entity);
@@ -159,7 +159,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		b2Body* tempBody;
 		b2BodyDef tempDef;
 		tempDef.type = b2_dynamicBody;
-		tempDef.position.Set(float32(110.f), float32(-250.f));
+		tempDef.position.Set(float32(125.f), float32(-250.f));
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 
@@ -168,7 +168,7 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		unsigned int bitHolder = EntityIdentifier::TransformBit() | EntityIdentifier::SpriteBit() | EntityIdentifier::PhysicsBit();
 		ECS::SetUpIdentifier(entity, bitHolder, "Pyramid base");
 		EntityStorage::StoreEntity(entity, 0);
-	}
+	}*/
 
 	{
 		auto bunanim = File::LoadJSON("bunAnimation.json");
@@ -202,10 +202,10 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		tempDef.position.Set(float32(-50.f), float32(-200.f));
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
+		tempBody->SetGravityScale(0);
+		tempBody->SetFixedRotation(true);
 
-		tempPhsBody = PhysicsBody(tempBody, float(tempSpr.GetHeight() / 2.f), vec2(0.f, 0.f), true);
-
-		tempPhsBody.SetMaxVelo(1000.f);
+		tempPhsBody = PhysicsBody(tempBody, float(10), vec2(0.f, 0.f), true);
 
 		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit()
 			| EntityIdentifier::AnimationBit() | EntityIdentifier::PhysicsBit();
@@ -247,22 +247,24 @@ void Assignment::InitScene(float windowWidth, float windowHeight)
 		b2Body* tempBody;
 		b2BodyDef tempDef;
 		tempDef.type = b2_dynamicBody;
-		if (x < 7) {
+		/*if (x < 7) {
 			tempDef.position.Set(float32(20.f + 30.f * x), float32(-200.f));
 		}
 		else if (x < 12) {
-			tempDef.position.Set(float32(200.f - 30.f * (x - 7)), float32(-170.f));
+			tempDef.position.Set(float32(185.f - 30.f * (x - 7)), float32(-170.f));
 		}
 		else if (x < 16) {
-			tempDef.position.Set(float32(110.f + 30.f * (x - 12)), float32(-140.f));
+			tempDef.position.Set(float32(80.f + 30.f * (x - 12)), float32(-140.f));
 		}
 		else if (x < 19) {
-			tempDef.position.Set(float32(200.f - 30.f * (x - 16)), float32(-110.f));
+			tempDef.position.Set(float32(155.f - 30.f * (x - 16)), float32(-110.f));
 		}
 		else if (x < 21) {
-			tempDef.position.Set(float32(170.f + 30.f * (x - 19)), float32(-80.f));
+			tempDef.position.Set(float32(110.f + 30.f * (x - 19)), float32(-80.f));
 		}
-		else tempDef.position.Set(float32(200.f), float32(-50.f));
+		else tempDef.position.Set(float32(125.f), float32(-50.f));*/
+
+		tempDef.position.Set(float32(-100 + x * 30.f), float32(-250.f));
 
 		tempBody = m_physicsWorld->CreateBody(&tempDef);
 

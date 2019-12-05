@@ -2,6 +2,7 @@
 #include <random>
 
 std::vector<b2RopeJoint*> joint;
+std::vector<b2DistanceJoint*> joint2;
 bool destroyJoint = true;
 
 Game::~Game()
@@ -47,14 +48,19 @@ void Game::InitGame()
 	PhysicsSystem::Init();
 
 	joint.resize(21);
+	joint2.resize(21);
 	
 	EntityManager::InitManager(m_register);
-	for (int x(1); x < 21; x++) {
+	for (int x(1); x <= 21; x++) {
 		b2RopeJointDef jointDef;
 		b2Body* body1 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody();
-		b2Body* body2 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+		//b2Body* body2 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+		if (x < 21)
+			jointDef.bodyB = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+		else
+			jointDef.bodyB = m_register->get<PhysicsBody>(EntityStorage::GetEntity(1)).GetBody();
 		jointDef.bodyA = body1;
-		jointDef.bodyB = body2;
+		//jointDef.bodyB = body2;
 		jointDef.collideConnected = true;
 		jointDef.maxLength = 0.f;
 
@@ -214,6 +220,11 @@ void Game::KeyboardHold()
 		m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).ApplyForce(vec3(0.f, 100000.f, 0.f));
 	}
 
+	if (m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).GetBody()->GetLinearVelocity().x > 0) {
+		m_register->get<AnimationController>(EntityIdentifier::MainPlayer()).SetActiveAnim(1);
+	}
+	else	m_register->get<AnimationController>(EntityIdentifier::MainPlayer()).SetActiveAnim(0);
+
 	if (Input::GetKey(Key::Z)) {
 		m_register->get<Camera>(EntityIdentifier::MainCamera()).Zoom(0.5f);
 	}
@@ -236,42 +247,51 @@ void Game::KeyboardDown()
 	}
 
 	if (Input::GetKeyDown(Key::F)) {
-		if (joint[20] == NULL) {
-			b2RopeJointDef jointDef;
-			b2Body* body1 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(1)).GetBody();
-			b2Body* body2 = m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).GetBody();
-			jointDef.bodyA = body1;
-			jointDef.bodyB = body2;
-			jointDef.collideConnected = true;
-			jointDef.maxLength = 40.f;
+		if (joint2[0] == nullptr) {
+			for (int x(1); x <= 21; x++) {
+				b2DistanceJointDef jointDef;
+				b2Body* body1 = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody();
+				b2Body* body2 = m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer()).GetBody();
+				jointDef.bodyA = body1;
+				jointDef.bodyB = body2;
+				jointDef.collideConnected = true;
+				jointDef.dampingRatio = 0.1f;
+				jointDef.length = 90.f;
+				jointDef.frequencyHz = 0.5f;
 
-			joint[20] = (b2RopeJoint*)m_activeScene->GetPhysicsWorld().CreateJoint(&jointDef);
+				joint2[x - 1] = (b2DistanceJoint*)m_activeScene->GetPhysicsWorld().CreateJoint(&jointDef);
+			}
 		}
 		else {
-			m_activeScene->GetPhysicsWorld().DestroyJoint(joint[20]);
-			joint[20] = NULL;
+			for (int x(0); x < 21; x++) {
+				m_activeScene->GetPhysicsWorld().DestroyJoint(joint2[x]);
+				joint2[x] = nullptr;
+			}
 		}
 	}
 
 	if (Input::GetKeyDown(Key::Space)) {
 		if (destroyJoint) {
-			for (int x(0); x < 20; x++) {
+			for (int x(0); x <= 20; x++) {
 				m_activeScene->GetPhysicsWorld().DestroyJoint(joint[x]);
 				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).ApplyForce(
 					vec3((rand() % 3 - 1 ) * 1000000.f * (rand() % 11), 10000000.f, 0.f));
 				joint[x] = NULL;
 			}
-			m_register->get<PhysicsBody>(EntityStorage::GetEntity(21)).ApplyForce(
+			/*m_register->get<PhysicsBody>(EntityStorage::GetEntity(21)).ApplyForce(
 				vec3((rand() % 3 - 1) * 1000000.f * (rand() % 11), 10000000.f, 0.f));
 			m_register->get<PhysicsBody>(EntityStorage::GetEntity(0)).ApplyForce(
-				vec3((rand() % 3 - 1) * 1000000.f * (rand() % 11), 10000000.f, 0.f));
+				vec3((rand() % 3 - 1) * 1000000.f * (rand() % 11), 10000000.f, 0.f));*/
 			destroyJoint = false;
 		}
 		else {
-			for (int x(1); x < 21; x++) {
+			for (int x(1); x <= 21; x++) {
 				b2RopeJointDef jointDef;
 				jointDef.bodyA = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody();
-				jointDef.bodyB = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+				if (x < 21)
+					jointDef.bodyB = m_register->get<PhysicsBody>(EntityStorage::GetEntity(x + 1)).GetBody();
+				else
+					jointDef.bodyB = m_register->get<PhysicsBody>(EntityStorage::GetEntity(1)).GetBody();
 				jointDef.collideConnected = true;
 				jointDef.maxLength = 0.f;
 
@@ -282,30 +302,35 @@ void Game::KeyboardDown()
 	}
 
 	if (Input::GetKeyDown(Key::R)) {
-		for (int x(1); x < 21; x++) {
+		/*for (int x(1); x < 21; x++) {
 			if (x < 7) {
 				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
 					float32(20.f + 30.f * x), float32(-200.f)), float32(0.f));
 			}
 			else if (x < 12) {
 				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
-					float32(200.f - 30.f * (x - 7)), float32(-170.f)), float32(0.f));
+					float32(185.f - 30.f * (x - 7)), float32(-170.f)), float32(0.f));
 			}
 			else if (x < 16) {
 				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
-					float32(110.f + 30.f * (x - 12)), float32(-140.f)), float32(0.f));
+					float32(80.f + 30.f * (x - 12)), float32(-140.f)), float32(0.f));
 			}
 			else if (x < 19) {
 				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
-					float32(200.f - 30.f * (x - 16)), float32(-110.f)), float32(0.f));
+					float32(155.f - 30.f * (x - 16)), float32(-110.f)), float32(0.f));
 			}
 			else if (x < 21) {
 				m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
-					float32(170.f + 30.f * (x - 19)), float32(-80.f)), float32(0.f));
+					float32(110.f + 30.f * (x - 19)), float32(-80.f)), float32(0.f));
 			}
 		}
-		m_register->get<PhysicsBody>(EntityStorage::GetEntity(21)).GetBody()->SetTransform(b2Vec2(float32(200.f), float32(-50.f)), float32(0.f));
-		m_register->get<PhysicsBody>(EntityStorage::GetEntity(0)).GetBody()->SetTransform(b2Vec2(float32(110.f), float32(-250.f)), float32(0.f));
+		m_register->get<PhysicsBody>(EntityStorage::GetEntity(21)).GetBody()->SetTransform(b2Vec2(float32(125.f), float32(-50.f)), float32(0.f));
+		m_register->get<PhysicsBody>(EntityStorage::GetEntity(0)).GetBody()->SetTransform(b2Vec2(float32(125.f), float32(-250.f)), float32(0.f));*/
+		for (int x(1); x <= 21; x++) {
+			m_register->get<PhysicsBody>(EntityStorage::GetEntity(x)).GetBody()->SetTransform(b2Vec2(
+				float32(-100 + x * 30.f), float32(-250.f)), float32(0.f));
+		}
+	
 	}
 }
 
@@ -344,17 +369,17 @@ void Game::MouseClick(SDL_MouseButtonEvent evnt)
 	float windowHeight = BackEnd::GetWindowHeight();
 	if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) {
 		int maincamera = EntityIdentifier::MainCamera();
+		auto & mainplayer = m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer());
 		vec2(click) = vec2(
 			evnt.x / windowHeight * 200.f - 100.f * windowWidth / windowHeight,
 			-evnt.y / windowHeight * 200.f + 100.f
 			)
 			+ vec2(m_register->get<Camera>(maincamera).GetPositionX(),
 			m_register->get<Camera>(maincamera).GetPositionY());
-		auto & mainplayer = m_register->get<PhysicsBody>(EntityIdentifier::MainPlayer());
 
 		vec2(change) = vec2(click.x - mainplayer.GetPosition().x, click.y - mainplayer.GetPosition().y).Normalize();
 
-		mainplayer.ApplyForce(vec3(change.x, change.y, 0.f) * 10000000.f);
+		mainplayer.ApplyForce(vec3(change.x, change.y, 0.f) * 100000000.f);
 	}
 
 	if (m_guiActive)

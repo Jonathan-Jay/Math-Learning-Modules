@@ -8,7 +8,7 @@
 class Scene
 {
 public:
-	Scene() { m_sceneReg = new entt::registry(); }
+	Scene() { m_sceneReg = new entt::registry(); m_physicsWorld = new b2World(m_gravity);  }
 	Scene(std::string name);
 	~Scene() { }
 

@@ -1,0 +1,25 @@
+4 reds (c-phys)
+(916, 915), (964, 968)
+49 x 48
+
+1 slingshot (two parts)
+back:
+(0, 199), (40, 0)
+41 x 200
+front:
+(942, 125), (984, 0)
+44 x 126
+
+4 small pig (c-phys)
+(551, 923), (598, 877)
+48 x 47
+
+1 long wood (b-phys)
+(97, 96), (176, 91)
+80 x 6
+4 small wood
+(163, 104), (175, 98)
+13 x 7
+3 double small wood
+(69, 150), (95, 144)
+27 x 7
