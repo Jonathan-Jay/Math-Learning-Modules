@@ -36,22 +36,17 @@ void EntityManager::CreateTab()
 void EntityManager::CreateManager()
 {
 	if (m_selectable.GetSelected()) {
-		int mainplayer = EntityIdentifier::MainPlayer(), object = EntityIdentifier::Object(), maincamera = EntityIdentifier::MainCamera();
-		float Scalar = m_register->get<Sprite>(object).GetWidth();
+		int mainplayer = EntityIdentifier::MainPlayer(), maincamera = EntityIdentifier::MainCamera();
 
 		vec3(MainPlayerPos) = m_register->get<Transform>(mainplayer).GetPosition();
-		vec3(ObjectPos) = m_register->get<Transform>(object).GetPosition();
 		vec3(CameraPos) = m_register->get<Camera>(maincamera).GetPosition();
 
 		Degrees CameraRot = Transform::ToDegrees(-m_register->get<Camera>(maincamera).GetRotationAngleZ());
 
 		if (ImGui::Button("Reset All", ImVec2(200.f, 20.f))) {
 			MainPlayerPos = vec3(0.f, 0.f, 0.f);
-			ObjectPos = vec3(0.f, 100.f, 10.f);
 			CameraRot = 0.f;
-			Scalar = 20.f;
 			randomized = false;
-			randomized2 = false;
 			rotating = false;
 			rotating2 = false;
 			m_register->get<Camera>(maincamera).SetPosition(MainPlayerPos);
@@ -111,30 +106,6 @@ void EntityManager::CreateManager()
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNode("Object")) {
-			float Range2[2] = { ObjectPos.x, ObjectPos.y };
-			if (ImGui::DragFloat2("Position (x, y)", &Range2[0], 1.f, -200.f, 200.f)) {
-				ObjectPos = vec3(Range2[0], Range2[1], ObjectPos.z);
-			}
-
-			if (ImGui::Button("Reset Position ", ImVec2(200.f, 20.f))) {
-				ObjectPos = vec3(0.f, 50.f, 10.f);
-			}
-
-			ImGui::Checkbox("Randomize Position ", &randomized2);
-			if (randomized2) {
-				ObjectPos = vec3(((rand() % 400) - 200), ((rand() % 400) - 200), ObjectPos.z);
-			}
-
-			ImGui::DragFloat("Size", &Scalar, 0.5f, 5.f, 200.f);
-
-			if (ImGui::Button("Reset Size", ImVec2(200.f, 20.f))) {
-				Scalar = 20.f;
-			}
-
-			ImGui::TreePop();
-		}
-
 		if (ImGui::TreeNode("Camera")) {
 			ImGui::DragFloat("Camera Angle Z", &CameraRot);
 
@@ -175,9 +146,21 @@ void EntityManager::CreateManager()
 		
 		m_register->get<Camera>(maincamera).SetRotationAngleZ(Transform::ToRadians(-CameraRot));
 		m_register->get<Camera>(maincamera).SetPosition(CameraPos);
-		
-		m_register->get<Transform>(object).SetPosition(ObjectPos);
-		m_register->get<Sprite>(object).SetWidth(Scalar);
-		m_register->get<Sprite>(object).SetHeight(Scalar);
 	}
+}
+
+std::vector<int> EntityStorage::storage = {};
+
+void EntityStorage::StoreEntity(int entity, int number)
+{
+	if (storage.size() < number + 1) {
+		storage.resize(number + 1);
+	}
+
+	storage[number] = entity;
+}
+
+int EntityStorage::GetEntity(int number)
+{
+	return storage[number];
 }

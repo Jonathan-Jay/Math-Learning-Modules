@@ -1,5 +1,7 @@
 #pragma once
 #include "Scene.h"
+#include "EntityManager.h"
+#include <string>
 
 class Assignment : public Scene
 {
